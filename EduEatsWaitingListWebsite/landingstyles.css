@@ -1,0 +1,490 @@
+/* CSS Document */
+/* CSS Document */
+
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    line-height: 1.6;
+}
+
+h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+}
+
+
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.container {
+    width: 90%;
+    margin: 0 auto;
+}
+
+/* Hero Section */
+.hero {
+    background-color: #f4f4f4; /* Light background color */
+    color: #1a1f71; /* Text color (update if needed) */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 50px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.logo {
+    height: 120px; /* Adjust as needed */
+    width: auto;  /* Maintain aspect ratio */
+}
+
+.nav-links a {
+    margin-left: 20px;
+    color: #1a1f71; /* Update to green if needed */
+    text-decoration: none;
+}
+
+.hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.hero-text {
+    max-width: 50%;
+	
+}
+
+.slogan {
+    font-size: 1.2rem; /* Adjust the font size as needed */
+    color: #4a4a4a; /* Grayish color or choose another */
+    margin-top: 10px; /* Space above the slogan */
+    font-style: italic; /* Italicize the text */
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    color: #00A7A2; /* Update to green if needed */
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #4a4a4a; /* Update to a greenish tone if needed */
+}
+
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.cta-button {
+    padding: 15px 30px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.cta-button.primary {
+    background-color: #008d8b; /* Green button background */
+    color: #fff;
+}
+
+.cta-button.primary:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+.cta-button.secondary {
+    background-color: transparent;
+    color: #28a745; /* Green text color */
+    border: 2px solid #28a745; /* Green border */
+}
+
+.cta-button.secondary:hover {
+    background-color: #e6f2ff; /* Light background on hover */
+}
+
+.hero-image {
+    max-width: 45%;
+}
+
+.hero-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero {
+        padding: 20px;
+    }
+
+    .hero-content {
+        flex-direction: column;
+    }
+
+    .hero-text, .hero-image {
+        max-width: 100%;
+    }
+
+    .hero-image {
+        margin-top: 30px;
+    }
+}
+
+/* Features Section */
+.features {
+    display: flex;
+    justify-content: space-around;
+    padding: 60px 20px;
+    background-color: #f7f7f7;
+}
+
+.feature {
+    max-width: 300px;
+    text-align: center;
+}
+
+.feature h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.feature p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Call to Action Section */
+.call-to-action {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #eee;
+}
+
+.call-to-action h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+/* Footer Section */
+.footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Additional style for Stripe button */
+.stripe-button {
+    background-color: #6772E5; /* Stripe's signature color */
+    margin-top: 20px;
+}
+
+.stripe-button:hover {
+    background-color: #5469D4;
+}
+
+/* Subscription Section */
+.subscription {
+    background-color: #1a1a1a;
+    color: #fff;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.subscription h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.billing-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin: 0 15px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #28a745;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.save {
+    color: #28a745;
+    margin-left: 5px;
+}
+
+.plan-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.plan {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 30px;
+    width: 300px;
+    text-align: left;
+    position: relative;
+}
+
+.plan.popular {
+    border: 2px solid #28a745;
+}
+
+.popular-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #28a745;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.plan h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.plan .for {
+    color: #999;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.plan .price {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.plan .price span {
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.plan .features {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.plan .features li {
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 25px;
+}
+
+.plan .features li::before {
+    content: "✓";
+    color: #28a745;
+    position: absolute;
+    left: 0;
+}
+
+.plan-button {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.plan-button:hover {
+    background-color: #218838;
+}
+
+.plan .features {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.plan .features li {
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 25px;
+    color: #999; /* Light gray text color for better readability */
+}
+
+.plan .features li::before {
+    content: "✓";
+    color: #28a745; /* Keep the checkmark green */
+    position: absolute;
+    left: 0;
+}
+
+/* Remove any background color that might have been set */
+.plan .features,
+.plan .features li {
+    background-color: transparent;
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.footer p {
+    margin: 0;
+    padding: 5px 10px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.footer-links p {
+    margin: 0 15px;
+}
+
+.footer a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .plan-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .plan {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 20px;
+    }
+}
+/* Waitlist Section */
+.waitlist {
+    background-color: #f7f7f7;
+    color: #1a1f71;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.waitlist h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.waitlist p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.waitlist form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.waitlist label {
+    font-size: 1rem;
+}
+
+.waitlist input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.waitlist button {
+    padding: 15px 30px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.waitlist button:hover {
+    background-color: #218838;
+}
