@@ -47,6 +47,8 @@ export default function Login() {
     setLoading(true)
     setError(null)
 
+    console.log('Starting authentication process')
+
     if (!validateEmail(email)) {
       setError('Please enter a valid email address')
       setLoading(false)
@@ -80,7 +82,10 @@ export default function Login() {
           },
         })
 
+        console.log('Supabase signUp response:', { data, error })
+
         if (error) {
+          console.error('Supabase signUp error:', error)
           if (error.status === 429) {
             const cooldownEnd = Date.now() + COOLDOWN_PERIOD
             localStorage.setItem('registrationCooldownEnd', cooldownEnd.toString())
@@ -89,8 +94,6 @@ export default function Login() {
           }
           throw error
         }
-
-        console.log('User registration response:', data)
 
         if (data.user) {
           console.log('Inserting user profile with role:', finalRole)
@@ -113,14 +116,21 @@ export default function Login() {
           })
 
           if (signInError) {
+            console.error('Error signing in after registration:', signInError)
             throw signInError
           }
 
+          console.log('User signed in successfully')
           router.push('/')
         }
       } else {
+        console.log('Attempting to sign in')
         const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
+        if (error) {
+          console.error('Error signing in:', error)
+          throw error
+        }
+        console.log('User signed in successfully')
         router.push('/')
       }
     } catch (error: any) {

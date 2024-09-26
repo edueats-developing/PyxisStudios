@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, addManualUser, getUserProfile, updateUserProfile } from '@/lib/supabase'
 import { withAuth } from '@/components/withAuth'
 import { User } from '@supabase/supabase-js'
 
@@ -13,20 +13,13 @@ interface MenuItem {
   category: string
 }
 
-interface OrderItem {
-  id: number
-  menu_item: MenuItem
-  quantity: number
-  price: number
-}
-
 interface Order {
   id: number
   created_at: string
   total_price: number
   status: string
   user_id: string
-  items: OrderItem[]
+  items: number[]
 }
 
 interface AdminDashboardProps {
@@ -39,6 +32,12 @@ function AdminDashboard({ user }: AdminDashboardProps) {
   const [newItem, setNewItem] = useState<Omit<MenuItem, 'id'>>({ name: '', description: '', price: '', category: '' })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
+
+  // New state for manual user creation
+  const [newUserEmail, setNewUserEmail] = useState('')
+  const [newUserPassword, setNewUserPassword] = useState('')
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'driver' | 'customer'>('customer')
 
   useEffect(() => {
     fetchMenuItems()
@@ -60,15 +59,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select(`
-          *,
-          items:order_items(
-            id,
-            quantity,
-            price,
-            menu_item:menu_items(*)
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
       if (error) throw error
       setOrders(data || [])
@@ -87,9 +78,10 @@ function AdminDashboard({ user }: AdminDashboardProps) {
       if (error) throw error
       fetchMenuItems()
       setNewItem({ name: '', description: '', price: '', category: '' })
+      setNotification({ message: 'Menu item added successfully', type: 'success' })
     } catch (error) {
       console.error('Error adding menu item:', error)
-      setError('Failed to add menu item')
+      setNotification({ message: 'Failed to add menu item', type: 'error' })
     }
   }
 
@@ -98,9 +90,10 @@ function AdminDashboard({ user }: AdminDashboardProps) {
       const { error } = await supabase.from('menu_items').delete().eq('id', id)
       if (error) throw error
       fetchMenuItems()
+      setNotification({ message: 'Menu item deleted successfully', type: 'success' })
     } catch (error) {
       console.error('Error deleting menu item:', error)
-      setError('Failed to delete menu item')
+      setNotification({ message: 'Failed to delete menu item', type: 'error' })
     }
   }
 
@@ -113,9 +106,24 @@ function AdminDashboard({ user }: AdminDashboardProps) {
       
       if (error) throw error
       fetchOrders()
+      setNotification({ message: 'Order status updated successfully', type: 'success' })
     } catch (error) {
       console.error('Error updating order status:', error)
-      setError('Failed to update order status')
+      setNotification({ message: 'Failed to update order status', type: 'error' })
+    }
+  }
+
+  async function handleManualUserCreation(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const newUser = await addManualUser(newUserEmail, newUserPassword, newUserRole)
+      setNotification({ message: `User created successfully: ${newUser.email}`, type: 'success' })
+      setNewUserEmail('')
+      setNewUserPassword('')
+      setNewUserRole('customer')
+    } catch (error) {
+      console.error('Error creating user:', error)
+      setNotification({ message: 'Failed to create user', type: 'error' })
     }
   }
 
@@ -132,6 +140,12 @@ function AdminDashboard({ user }: AdminDashboardProps) {
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       <p className="mb-4">Welcome, {user.email}</p>
       
+      {notification && (
+        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {notification.message}
+        </div>
+      )}
+
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Add New Menu Item</h2>
         <form onSubmit={addMenuItem} className="space-y-2">
@@ -190,7 +204,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
         </ul>
       </div>
 
-      <div>
+      <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Recent Orders</h2>
         <ul className="space-y-4">
           {orders.map((order) => (
@@ -199,14 +213,6 @@ function AdminDashboard({ user }: AdminDashboardProps) {
               <p><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
               <p><strong>Total:</strong> ${order.total_price.toFixed(2)}</p>
               <p><strong>Status:</strong> {order.status}</p>
-              <p><strong>Items:</strong></p>
-              <ul className="list-disc list-inside">
-                {order.items.map((item) => (
-                  <li key={item.id}>
-                    {item.menu_item.name} - Quantity: {item.quantity} - Price: ${item.price.toFixed(2)}
-                  </li>
-                ))}
-              </ul>
               <div className="mt-2">
                 <button
                   onClick={() => updateOrderStatus(order.id, 'preparing')}
@@ -224,6 +230,38 @@ function AdminDashboard({ user }: AdminDashboardProps) {
             </li>
           ))}
         </ul>
+      </div>
+
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Manually Create User</h2>
+        <form onSubmit={handleManualUserCreation} className="space-y-2">
+          <input
+            type="email"
+            placeholder="Email"
+            value={newUserEmail}
+            onChange={(e) => setNewUserEmail(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={newUserPassword}
+            onChange={(e) => setNewUserPassword(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+          <select
+            value={newUserRole}
+            onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'driver' | 'customer')}
+            className="w-full p-2 border rounded"
+          >
+            <option value="customer">Customer</option>
+            <option value="driver">Driver</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button type="submit" className="bg-blue-500 text-white p-2 rounded">Create User</button>
+        </form>
       </div>
     </div>
   )

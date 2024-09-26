@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS order_items (
 -- Create profiles table if it doesn't exist
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  role TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'customer',
   first_name TEXT,
   last_name TEXT,
   phone TEXT,
@@ -41,7 +41,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (id, role)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'role');
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'role', 'customer'));
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -55,18 +55,10 @@ CREATE TRIGGER on_auth_user_created
 -- Enable Row Level Security (RLS) on the profiles table
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies
-DROP POLICY IF EXISTS "Users can view and update their own profile" ON profiles;
-DROP POLICY IF EXISTS "Allow public read access to profiles" ON profiles;
-
 -- Create a policy that allows users to see and update only their own profile
 CREATE POLICY "Users can view and update their own profile" ON profiles
   FOR ALL USING (auth.uid() = id);
 
--- Allow insert access for the handle_new_user function
-CREATE POLICY "Allow insert for new users" ON profiles
-  FOR INSERT WITH CHECK (TRUE);
-
--- Allow public read access to profiles for role checking
+-- Allow public access to profiles for role checking
 CREATE POLICY "Allow public read access to profiles" ON profiles
   FOR SELECT USING (true);
