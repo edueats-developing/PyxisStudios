@@ -44,19 +44,19 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     fetchOrders()
   }, [])
 
-  async function fetchMenuItems() {
-    try {
-      const { data, error } = await supabase.from('menu_items').select('*')
-      if (error) throw error
-      setMenuItems(data || [])
-    } catch (error) {
-      console.error('Error fetching menu items:', error)
-      setError('Failed to load menu items')
+  async function fetchMenuItems() { // This is an async function that fetches the menu items, in this specific example, this is used to catch errors
+    try { // Starts try block
+      const { data, error } = await supabase.from('menu_items').select('*') // Collect every menu items from Menu items table from SupaBase
+      if (error) throw error // If there is an error initiate error response
+      setMenuItems(data || []) // Opens Menu items array
+    } catch (error) { // Catches error
+      console.error('Error fetching menu items:', error) // Display to console 'Error fetching menu items', error
+      setError('Failed to load menu items') // Set specific error to be displayed
     }
   }
 
-  async function fetchOrders() {
-    try {
+  async function fetchOrders() { // This is an async function that fetches the orders from the orders table from SupaBase
+    try { // Starts try loop
       const { data, error } = await supabase
         .from('orders')
         .select('*')
