@@ -10,6 +10,7 @@ interface MenuItem {
   description: string
   price: string
   category: string
+  image_url: string | null
 }
 
 interface CartItem extends MenuItem {
@@ -146,6 +147,13 @@ export default function Menu() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
           <div key={item.id} className="border p-4 rounded">
+            {item.image_url && (
+              <img 
+                src={item.image_url} 
+                alt={item.name} 
+                className="w-full h-48 object-cover mb-2 rounded"
+              />
+            )}
             <h3 className="font-bold">{item.name}</h3>
             <p>{item.description}</p>
             <p className="font-semibold">${item.price}</p>

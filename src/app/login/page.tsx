@@ -96,19 +96,19 @@ export default function Login() {
         }
 
         if (data.user) {
-          console.log('Inserting user profile with role:', finalRole)
-          const { error: profileError } = await supabase
+          console.log('Inserting or updating user profile with role:', finalRole)
+          const { error: upsertError } = await supabase
             .from('profiles')
-            .insert([
+            .upsert([
               { id: data.user.id, role: finalRole }
-            ])
+            ], { onConflict: 'id' })
 
-          if (profileError) {
-            console.error('Error inserting profile:', profileError)
-            throw profileError
+          if (upsertError) {
+            console.error('Error upserting profile:', upsertError)
+            throw upsertError
           }
 
-          console.log('Profile inserted successfully')
+          console.log('Profile inserted or updated successfully')
 
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email,

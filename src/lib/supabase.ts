@@ -2,7 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
+
+console.log('Environment variables:')
+console.log('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl)
+console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Not set')
+console.log('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Not set')
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
@@ -21,9 +26,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Create a separate admin client using the service role key
 let supabaseAdmin: ReturnType<typeof createClient> | null = null
 if (supabaseServiceKey) {
+  console.log('Initializing Supabase admin client')
   supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 } else {
-  console.warn('SUPABASE_SERVICE_ROLE_KEY is not set. Admin functions will not work.')
+  console.warn('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY is not set. Admin functions will not work.')
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -43,7 +49,9 @@ supabase.from('profiles').select('*').limit(1).then(
 
 // Function to manually add a user (for development and testing purposes)
 export async function addManualUser(email: string, password: string, role: 'admin' | 'driver' | 'customer') {
+  console.log('Attempting to add manual user:', email, role)
   if (!supabaseAdmin) {
+    console.error('Admin client is not initialized. Cannot add manual user.')
     throw new Error('Admin client is not initialized. Cannot add manual user.')
   }
 
@@ -56,7 +64,10 @@ export async function addManualUser(email: string, password: string, role: 'admi
       user_metadata: { role: role }
     })
 
-    if (userError) throw userError
+    if (userError) {
+      console.error('Error creating user:', userError)
+      throw userError
+    }
 
     if (userData.user) {
       console.log('User created successfully:', userData.user)
@@ -73,12 +84,14 @@ export async function addManualUser(email: string, password: string, role: 'admi
         throw profileError
       }
 
+      console.log('User profile inserted successfully')
       return userData.user
     } else {
+      console.error('User creation failed: No user data returned')
       throw new Error('User creation failed')
     }
   } catch (error) {
-    console.error('Error creating user:', error)
+    console.error('Error in addManualUser:', error)
     throw error
   }
 }

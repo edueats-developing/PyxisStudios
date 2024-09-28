@@ -83,6 +83,9 @@ export default function RootLayout({
                   <Link href="/order-history" className="mr-4 hover:text-[#33B8B4]">
                     Order History
                   </Link>
+                  <Link href="/order-tracking" className="mr-4 hover:text-[#33B8B4]">
+                    Track Orders
+                  </Link>
                   {profile?.role === 'admin' && (
                     <Link href="/admin" className="mr-4 hover:text-[#33B8B4]">
                       Admin Dashboard
