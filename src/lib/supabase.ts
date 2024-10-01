@@ -2,81 +2,36 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
-
-console.log('Environment variables:')
-console.log('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl)
-console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Not set')
-console.log('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Not set')
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-console.log('Initializing Supabase client with URL:', supabaseUrl)
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-})
-
-// Create a separate admin client using the service role key
-let supabaseAdmin: ReturnType<typeof createClient> | null = null
-if (supabaseServiceKey) {
-  console.log('Initializing Supabase admin client')
-  supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
-} else {
-  console.warn('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY is not set. Admin functions will not work.')
-}
-
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', event, session)
-})
-
-// Test the connection
-supabase.from('profiles').select('*').limit(1).then(
-  ({ data, error }) => {
-    if (error) {
-      console.error('Error connecting to Supabase:', error)
-    } else {
-      console.log('Successfully connected to Supabase')
-    }
-  }
-)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Function to manually add a user (for development and testing purposes)
 export async function addManualUser(email: string, password: string, role: 'admin' | 'driver' | 'customer') {
-  console.log('Attempting to add manual user:', email, role)
-  if (!supabaseAdmin) {
-    console.error('Admin client is not initialized. Cannot add manual user.')
-    throw new Error('Admin client is not initialized. Cannot add manual user.')
-  }
-
   try {
-    // Create the user with the role in the user metadata using the admin client
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: true,
-      user_metadata: { role: role }
+      options: {
+        data: {
+          role: role,
+        },
+      },
     })
 
-    if (userError) {
-      console.error('Error creating user:', userError)
-      throw userError
-    }
+    if (error) throw error
 
-    if (userData.user) {
-      console.log('User created successfully:', userData.user)
+    if (data.user) {
+      console.log('User created successfully:', data.user)
 
       // Insert the user's profile
-      const { error: profileError } = await supabaseAdmin
+      const { error: profileError } = await supabase
         .from('profiles')
         .insert([
-          { id: userData.user.id, role: role }
+          { id: data.user.id, role: role }
         ])
 
       if (profileError) {
@@ -85,9 +40,8 @@ export async function addManualUser(email: string, password: string, role: 'admi
       }
 
       console.log('User profile inserted successfully')
-      return userData.user
+      return data.user
     } else {
-      console.error('User creation failed: No user data returned')
       throw new Error('User creation failed')
     }
   } catch (error) {
