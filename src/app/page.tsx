@@ -190,9 +190,9 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-semibold mb-4">Follow Us</h3>
               <div className="flex space-x-4">
-                <a href="#" className="hover:text-[#00A7A2]">Facebook</a>
-                <a href="#" className="hover:text-[#00A7A2]">Twitter</a>
-                <a href="#" className="hover:text-[#00A7A2]">Instagram</a>
+                <a href="https://www.youtube.com/@EduEatsAUS" target="_blank" className="hover:text-[#00A7A2]">Youtube</a>
+                <a href="https://x.com/EduEats137077" target="_blank" className="hover:text-[#00A7A2]">Twitter</a>
+                <a href="https://www.instagram.com/edueats.official/" target="_blank" className="hover:text-[#00A7A2]">Instagram</a>
               </div>
             </div>
           </div>
