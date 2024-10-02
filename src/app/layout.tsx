@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { User, Session } from '@supabase/supabase-js'
+import { User } from '@supabase/supabase-js'
 import './globals.css'
 
 interface Profile {
@@ -44,7 +44,7 @@ export default function RootLayout({
     fetchUserAndProfile()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: string, session: Session | null) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session)
         if (session) {
           setUser(session.user)
