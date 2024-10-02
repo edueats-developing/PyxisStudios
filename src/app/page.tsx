@@ -1,11 +1,23 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+async function getRestaurants() {
+  const supabase = createServerComponentClient({ cookies })
+  const { data: restaurants } = await supabase.from('restaurants').select('*')
+  return restaurants
+}
+
+export default async function Home() {
+  const restaurants = await getRestaurants()
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col scroll-smooth">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
+      <header className="bg-white shadow-md">
         <div className="container mx-auto py-4 px-6 flex justify-between items-center">
           <div className="flex items-center">
             <Image
@@ -17,11 +29,6 @@ export default function Home() {
             />
             <h1 className="text-2xl font-bold text-[#00A7A2]">EduEats</h1>
           </div>
-          <nav className="hidden md:flex space-x-4">
-            <a href="#features" className="text-[#00A7A2] hover:text-[#008C87]">Features</a>
-            <a href="#plans" className="text-[#00A7A2] hover:text-[#008C87]">Subscription Plans</a>
-            <a href="#contact" className="text-[#00A7A2] hover:text-[#008C87]">Contact Us</a>
-          </nav>
           <Link href="/login" className="bg-[#00A7A2] text-white py-2 px-4 rounded hover:bg-[#008C87] transition duration-300">
             Login
           </Link>
@@ -47,24 +54,26 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Demo Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-8">See EduEats in Action</h2>
-            <div className="max-w-4xl mx-auto bg-gray-200 rounded-lg shadow-lg p-4">
-              <Image
-                src="/demo-screenshot.png"
-                alt="EduEats App Demo"
-                width={1200}
-                height={675}
-                className="rounded-lg"
-              />
+        {/* Restaurants Section */}
+        <section className="py-16">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">Our Partner Restaurants</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {restaurants?.map((restaurant) => (
+                <div key={restaurant.id} className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-xl font-semibold mb-2">{restaurant.name}</h3>
+                  <p className="text-gray-600 mb-4">{restaurant.description}</p>
+                  <Link href={`/menu?restaurant=${restaurant.id}`} className="bg-[#00A7A2] text-white py-2 px-4 rounded hover:bg-[#008C87] transition duration-300">
+                    View Menu
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-16">
+        <section className="bg-gray-200 py-16">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">Why Choose EduEats?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -99,54 +108,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="plans" className="bg-gray-200 py-16">
-          <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Subscription Plans</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white rounded-lg shadow-lg p-8">
-                <h3 className="text-2xl font-semibold mb-4">Basic Plan</h3>
-                <p className="text-4xl font-bold mb-4">$29<span className="text-lg font-normal">/month</span></p>
-                <ul className="mb-8">
-                  <li className="mb-2">✅ 10 meals per month</li>
-                  <li className="mb-2">✅ Free delivery</li>
-                  <li className="mb-2">✅ Access to standard menu</li>
-                </ul>
-                <Link href="/login" className="block w-full bg-[#00A7A2] text-white text-center py-2 rounded-full hover:bg-[#008C87] transition duration-300">
-                  Choose Plan
-                </Link>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-8 border-4 border-[#00A7A2]">
-                <h3 className="text-2xl font-semibold mb-4">Pro Plan</h3>
-                <p className="text-4xl font-bold mb-4">$49<span className="text-lg font-normal">/month</span></p>
-                <ul className="mb-8">
-                  <li className="mb-2">✅ 20 meals per month</li>
-                  <li className="mb-2">✅ Free delivery</li>
-                  <li className="mb-2">✅ Access to premium menu</li>
-                  <li className="mb-2">✅ Priority ordering</li>
-                </ul>
-                <Link href="/login" className="block w-full bg-[#00A7A2] text-white text-center py-2 rounded-full hover:bg-[#008C87] transition duration-300">
-                  Choose Plan
-                </Link>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-8">
-                <h3 className="text-2xl font-semibold mb-4">Ultimate Plan</h3>
-                <p className="text-4xl font-bold mb-4">$79<span className="text-lg font-normal">/month</span></p>
-                <ul className="mb-8">
-                  <li className="mb-2">✅ Unlimited meals</li>
-                  <li className="mb-2">✅ Free delivery</li>
-                  <li className="mb-2">✅ Access to all menus</li>
-                  <li className="mb-2">✅ Priority ordering</li>
-                  <li className="mb-2">✅ Exclusive discounts</li>
-                </ul>
-                <Link href="/login" className="block w-full bg-[#00A7A2] text-white text-center py-2 rounded-full hover:bg-[#008C87] transition duration-300">
-                  Choose Plan
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Call to Action */}
         <section className="bg-[#00A7A2] text-white py-16">
           <div className="container mx-auto text-center">
@@ -160,26 +121,15 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer id="contact" className="bg-gray-800 text-white py-8">
+      <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <Image
-                  src="/edueats_logo.png"
-                  alt="EduEats Logo"
-                  width={40}
-                  height={40}
-                  className="mr-2"
-                />
-                <h3 className="text-xl font-semibold">EduEats</h3>
-              </div>
-              <p>Email: support@edueats.org</p>
-              <p>Phone: (123) 456-7890</p>
-              <p>Address: 123 Campus Drive, College Town, ST 12345</p>
+          <div className="flex flex-wrap justify-between">
+            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+              <h3 className="text-xl font-semibold mb-2">EduEats</h3>
+              <p>Delicious meals delivered right to your campus!</p>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+              <h3 className="text-xl font-semibold mb-2">Quick Links</h3>
               <ul>
                 <li><Link href="/about" className="hover:text-[#00A7A2]">About Us</Link></li>
                 <li><Link href="/faq" className="hover:text-[#00A7A2]">FAQ</Link></li>
@@ -187,13 +137,10 @@ export default function Home() {
                 <li><Link href="/privacy" className="hover:text-[#00A7A2]">Privacy Policy</Link></li>
               </ul>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Follow Us</h3>
-              <div className="flex space-x-4">
-                <a href="https://www.youtube.com/@EduEatsAUS" target="_blank" className="hover:text-[#00A7A2]">Youtube</a>
-                <a href="https://x.com/EduEats137077" target="_blank" className="hover:text-[#00A7A2]">Twitter</a>
-                <a href="https://www.instagram.com/edueats.official/" target="_blank" className="hover:text-[#00A7A2]">Instagram</a>
-              </div>
+            <div className="w-full md:w-1/3">
+              <h3 className="text-xl font-semibold mb-2">Contact Us</h3>
+              <p>Email: support@edueats.com</p>
+              <p>Phone: (123) 456-7890</p>
             </div>
           </div>
           <div className="mt-8 text-center">

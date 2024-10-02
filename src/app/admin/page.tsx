@@ -14,6 +14,12 @@ interface MenuItem {
   image_url: string | null
 }
 
+interface Restaurant {
+  id: number
+  name: string
+  description: string
+}
+
 interface Order {
   id: number
   created_at: string
@@ -35,6 +41,7 @@ interface AdminDashboardProps {
 }
 
 function AdminDashboard({ user }: AdminDashboardProps) {
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [newItem, setNewItem] = useState<Omit<MenuItem, 'id'>>({ name: '', description: '', price: '', category: '', image_url: null })
@@ -44,13 +51,39 @@ function AdminDashboard({ user }: AdminDashboardProps) {
   const [imageFile, setImageFile] = useState<File | null>(null)
 
   useEffect(() => {
-    fetchMenuItems()
-    fetchOrders()
+    fetchRestaurant()
   }, [])
+
+  useEffect(() => {
+    if (restaurant) {
+      fetchMenuItems()
+      fetchOrders()
+    }
+  }, [restaurant])
+
+  async function fetchRestaurant() {
+    try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .eq('admin_id', user.id)
+        .single()
+
+      if (error) throw error
+      setRestaurant(data)
+    } catch (error) {
+      console.error('Error fetching restaurant:', error)
+      setError('Failed to load restaurant information')
+    }
+  }
 
   async function fetchMenuItems() {
     try {
-      const { data, error } = await supabase.from('menu_items').select('*')
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('restaurant_id', restaurant!.id)
+
       if (error) throw error
       setMenuItems(data || [])
     } catch (error) {
@@ -72,7 +105,9 @@ function AdminDashboard({ user }: AdminDashboardProps) {
             menu_item:menu_items(*)
           )
         `)
+        .eq('restaurant_id', restaurant!.id)
         .order('created_at', { ascending: false })
+
       if (error) throw error
       setOrders(data || [])
     } catch (error) {
@@ -90,7 +125,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
       if (imageFile) {
         const { data, error } = await supabase.storage
           .from('menu-images')
-          .upload(`${Date.now()}-${imageFile.name}`, imageFile)
+          .upload(`${restaurant!.id}/${Date.now()}-${imageFile.name}`, imageFile)
         
         if (error) throw error
         
@@ -101,7 +136,10 @@ function AdminDashboard({ user }: AdminDashboardProps) {
         image_url = publicUrl
       }
 
-      const { data, error } = await supabase.from('menu_items').insert([{ ...newItem, image_url }])
+      const { data, error } = await supabase
+        .from('menu_items')
+        .insert([{ ...newItem, image_url, restaurant_id: restaurant!.id }])
+
       if (error) throw error
       fetchMenuItems()
       setNewItem({ name: '', description: '', price: '', category: '', image_url: null })
@@ -115,7 +153,12 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
   async function deleteMenuItem(id: number) {
     try {
-      const { error } = await supabase.from('menu_items').delete().eq('id', id)
+      const { error } = await supabase
+        .from('menu_items')
+        .delete()
+        .eq('id', id)
+        .eq('restaurant_id', restaurant!.id)
+
       if (error) throw error
       fetchMenuItems()
       setNotification({ message: 'Menu item deleted successfully', type: 'success' })
@@ -131,6 +174,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId)
+        .eq('restaurant_id', restaurant!.id)
       
       if (error) throw error
       fetchOrders()
@@ -149,9 +193,13 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     return <div className="text-center text-red-500">{error}</div>
   }
 
+  if (!restaurant) {
+    return <div className="text-center text-red-500">No restaurant found for this admin.</div>
+  }
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4">Admin Dashboard - {restaurant.name}</h1>
       <p className="mb-4">Welcome, {user.email}</p>
       
       {notification && (

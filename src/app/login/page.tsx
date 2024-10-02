@@ -11,7 +11,8 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [adminCode, setAdminCode] = useState('')
+  const [restaurantName, setRestaurantName] = useState('')
+  const [restaurantDescription, setRestaurantDescription] = useState('')
   const router = useRouter()
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -21,34 +22,32 @@ export default function Login() {
 
     try {
       if (isRegistering) {
-        let finalRole = role
-        if (role === 'admin') {
-          if (adminCode !== process.env.NEXT_PUBLIC_ADMIN_REGISTRATION_CODE) {
-            throw new Error('Invalid admin registration code')
-          }
-        }
-
-        const { data, error } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
-              role: finalRole,
+              role: role,
             },
           },
         })
 
-        if (error) throw error
+        if (authError) throw authError
 
-        if (data.user) {
-          // Insert the user's role into the profiles table
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              { id: data.user.id, role: finalRole }
-            ])
+        if (authData.user) {
+          // Start a Supabase transaction
+          const { data, error } = await supabase.rpc('create_user_profile_and_restaurant', {
+            user_id: authData.user.id,
+            user_role: role,
+            rest_name: restaurantName,
+            rest_description: restaurantDescription
+          })
 
-          if (profileError) throw profileError
+          if (error) throw error
+
+          if (data && data.startsWith('Error:')) {
+            throw new Error(data)
+          }
 
           alert('Registration successful! You can now log in.')
           setIsRegistering(false)
@@ -109,25 +108,36 @@ export default function Login() {
           required
         />
         {isRegistering && (
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-2 mb-4 border rounded"
-          >
-            <option value="customer">Customer</option>
-            <option value="driver">Driver</option>
-            <option value="admin">Admin</option>
-          </select>
-        )}
-        {isRegistering && role === 'admin' && (
-          <input
-            type="text"
-            placeholder="Admin Registration Code"
-            value={adminCode}
-            onChange={(e) => setAdminCode(e.target.value)}
-            className="w-full p-2 mb-4 border rounded"
-            required
-          />
+          <>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full p-2 mb-4 border rounded"
+            >
+              <option value="customer">Customer</option>
+              <option value="driver">Driver</option>
+              <option value="admin">Restaurant Admin</option>
+            </select>
+            {role === 'admin' && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Restaurant Name"
+                  value={restaurantName}
+                  onChange={(e) => setRestaurantName(e.target.value)}
+                  className="w-full p-2 mb-4 border rounded"
+                  required
+                />
+                <textarea
+                  placeholder="Restaurant Description"
+                  value={restaurantDescription}
+                  onChange={(e) => setRestaurantDescription(e.target.value)}
+                  className="w-full p-2 mb-4 border rounded"
+                  required
+                />
+              </>
+            )}
+          </>
         )}
         <button 
           type="submit" 

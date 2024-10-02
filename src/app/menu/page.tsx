@@ -11,6 +11,13 @@ interface MenuItem {
   price: string
   category: string
   image_url: string | null
+  restaurant_id: number
+}
+
+interface Restaurant {
+  id: number
+  name: string
+  description: string
 }
 
 interface CartItem extends MenuItem {
@@ -18,17 +25,25 @@ interface CartItem extends MenuItem {
 }
 
 export default function Menu() {
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedRestaurant, setSelectedRestaurant] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchUser()
-    fetchMenuItems()
+    fetchRestaurants()
   }, [])
+
+  useEffect(() => {
+    if (selectedRestaurant) {
+      fetchMenuItems(selectedRestaurant)
+    }
+  }, [selectedRestaurant])
 
   async function fetchUser() {
     try {
@@ -40,11 +55,31 @@ export default function Menu() {
     }
   }
 
-  async function fetchMenuItems() {
+  async function fetchRestaurants() {
     try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .order('name', { ascending: true })
+      
+      if (error) throw error
+      setRestaurants(data || [])
+      if (data && data.length > 0) {
+        setSelectedRestaurant(data[0].id)
+      }
+    } catch (error) {
+      console.error('Error fetching restaurants:', error)
+      setError('Failed to load restaurants')
+    }
+  }
+
+  async function fetchMenuItems(restaurantId: number) {
+    try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('menu_items')
         .select('*')
+        .eq('restaurant_id', restaurantId)
         .order('name', { ascending: true })
       
       if (error) throw error
@@ -88,7 +123,12 @@ export default function Menu() {
       // Create the order
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
-        .insert([{ user_id: user.id, total_price: total, status: 'pending' }])
+        .insert([{ 
+          user_id: user.id, 
+          restaurant_id: selectedRestaurant,
+          total_price: total, 
+          status: 'pending' 
+        }])
         .select()
 
       if (orderError) throw orderError
@@ -136,6 +176,22 @@ export default function Menu() {
       <h1 className="text-2xl font-bold mb-4">Menu</h1>
       {user && <p className="mb-4">Welcome, {user.email}</p>}
       
+      <div className="mb-4">
+        <label htmlFor="restaurant-select" className="block mb-2">Select Restaurant:</label>
+        <select
+          id="restaurant-select"
+          value={selectedRestaurant || ''}
+          onChange={(e) => setSelectedRestaurant(Number(e.target.value))}
+          className="w-full p-2 border rounded"
+        >
+          {restaurants.map((restaurant) => (
+            <option key={restaurant.id} value={restaurant.id}>
+              {restaurant.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <input
         type="text"
         placeholder="Search menu items..."
@@ -147,17 +203,13 @@ export default function Menu() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
           <div key={item.id} className="border p-4 rounded">
-            {item.image_url && (
-              <img 
-                src={item.image_url} 
-                alt={item.name} 
-                className="w-full h-48 object-cover mb-2 rounded"
-              />
-            )}
             <h3 className="font-bold">{item.name}</h3>
             <p>{item.description}</p>
             <p className="font-semibold">${item.price}</p>
             <p>Category: {item.category}</p>
+            {item.image_url && (
+              <img src={item.image_url} alt={item.name} className="w-full h-40 object-cover mt-2 rounded" />
+            )}
             <button
               onClick={() => addToCart(item)}
               className="mt-2 bg-blue-500 text-white p-2 rounded"
