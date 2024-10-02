@@ -174,7 +174,7 @@ export default function Home() {
                 />
                 <h3 className="text-xl font-semibold">EduEats</h3>
               </div>
-              <p>Email: support@edueats.com</p>
+              <p>Email: support@edueats.org</p>
               <p>Phone: (123) 456-7890</p>
               <p>Address: 123 Campus Drive, College Town, ST 12345</p>
             </div>

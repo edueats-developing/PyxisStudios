@@ -56,8 +56,8 @@ const FAQPage = () => {
         <div className="mt-8 text-center">
           <p className="text-gray-700">
             Can't find the answer you're looking for? Contact our support team at{' '}
-            <a href="mailto:support@edueats.com" className="text-[#00A7A2] hover:underline">
-              support@edueats.com
+            <a href="mailto:support@edueats.org" className="text-[#00A7A2] hover:underline">
+              support@edueats.org
             </a>
           </p>
           <Link href="/" className="mt-4 inline-block bg-[#00A7A2] text-white py-2 px-4 rounded hover:bg-[#008C87] transition duration-300">
