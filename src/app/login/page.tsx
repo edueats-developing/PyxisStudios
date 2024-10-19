@@ -35,18 +35,39 @@ export default function Login() {
         if (authError) throw authError
 
         if (authData.user) {
-          // Start a Supabase transaction
-          const { data, error } = await supabase.rpc('create_user_profile_and_restaurant', {
-            user_id: authData.user.id,
-            user_role: role,
-            rest_name: restaurantName,
-            rest_description: restaurantDescription
-          })
+          // Insert the user's role into the profiles table
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([
+              { id: authData.user.id, role: role }
+            ])
 
-          if (error) throw error
+          if (profileError) throw profileError
 
-          if (data && data.startsWith('Error:')) {
-            throw new Error(data)
+          if (role === 'admin') {
+            // Create a restaurant for the admin
+            const { data: restaurantData, error: restaurantError } = await supabase
+              .from('restaurants')
+              .insert([
+                { 
+                  name: restaurantName, 
+                  description: restaurantDescription,
+                  admin_id: authData.user.id
+                }
+              ])
+              .select()
+
+            if (restaurantError) throw restaurantError
+
+            // Update the profile with the restaurant_id
+            if (restaurantData && restaurantData.length > 0) {
+              const { error: updateProfileError } = await supabase
+                .from('profiles')
+                .update({ restaurant_id: restaurantData[0].id })
+                .eq('id', authData.user.id)
+
+              if (updateProfileError) throw updateProfileError
+            }
           }
 
           alert('Registration successful! You can now log in.')

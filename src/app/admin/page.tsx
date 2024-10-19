@@ -69,8 +69,25 @@ function AdminDashboard({ user }: AdminDashboardProps) {
         .eq('admin_id', user.id)
         .single()
 
-      if (error) throw error
-      setRestaurant(data)
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No restaurant found, create one
+          const { data: newRestaurant, error: createError } = await supabase
+            .from('restaurants')
+            .insert([
+              { name: 'My Restaurant', description: 'Restaurant description', admin_id: user.id }
+            ])
+            .select()
+            .single()
+
+          if (createError) throw createError
+          setRestaurant(newRestaurant)
+        } else {
+          throw error
+        }
+      } else {
+        setRestaurant(data)
+      }
     } catch (error) {
       console.error('Error fetching restaurant:', error)
       setError('Failed to load restaurant information')
