@@ -73,50 +73,86 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {!isLandingPage && (
-          <nav className="bg-[#00A7A2] p-4 text-white">
-            <div className="container mx-auto flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold">
-                EduEats
-              </Link>
-              <div>
-                {user ? (
-                  <>
-                    <Link href="/menu" className="mr-4 hover:text-[#33B8B4]">
-                      Menu
-                    </Link>
-                    <Link href="/order-history" className="mr-4 hover:text-[#33B8B4]">
-                      Order History
-                    </Link>
-                    <Link href="/order-tracking" className="mr-4 hover:text-[#33B8B4]">
-                      Track Orders
-                    </Link>
-                    {profile?.role === 'admin' && (
-                      <Link href="/admin" className="mr-4 hover:text-[#33B8B4]">
-                        Admin Dashboard
+          <>
+            {/* Horizontal Navbar */}
+            <nav className="bg-[#00A7A2] p-4 text-white z-10 relative">
+              <div className="container mx-auto flex justify-between items-center">
+                <Link href="/" className="text-2xl font-bold">
+                  EduEats
+                </Link>
+                <div>
+                  {user ? (
+                    <>
+                      <Link href="/menu" className="mr-4 hover:text-[#33B8B4]">
+                        Menu
                       </Link>
-                    )}
-                    {profile?.role === 'driver' && (
-                      <Link href="/driver" className="mr-4 hover:text-[#33B8B4]">
-                        Driver Dashboard
+                      <Link href="/order-history" className="mr-4 hover:text-[#33B8B4]">
+                        Order History
                       </Link>
-                    )}
-                    <Link href="/profile" className="mr-4 hover:text-[#33B8B4]">
-                      Profile
+                      <Link href="/order-tracking" className="mr-4 hover:text-[#33B8B4]">
+                        Track Orders
+                      </Link>
+                      {profile?.role === 'admin' && (
+                        <>
+                          <Link href="/admin" className="mr-4 hover:text-[#33B8B4]">
+                            Admin Dashboard
+                          </Link>
+                          <button onClick={handleLogout} className="hover:text-[#33B8B4]">
+                            Logout
+                          </button>
+                        </>
+                      )}
+                      {profile?.role === 'driver' && (
+                        <Link href="/driver" className="mr-4 hover:text-[#33B8B4]">
+                          Driver Dashboard
+                        </Link>
+                      )}
+                      {profile?.role !== 'admin' && (
+                        <Link href="/profile" className="mr-4 hover:text-[#33B8B4]">
+                          Profile
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <Link href="/login" className="hover:text-[#33B8B4]">
+                      Login
                     </Link>
-                    <button onClick={handleLogout} className="hover:text-[#33B8B4]">
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <Link href="/login" className="hover:text-[#33B8B4]">
-                    Login
-                  </Link>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          </nav>
+            </nav>
+            {/* Vertical Sidebar for Admin */}
+            {profile?.role === 'admin' && (
+              <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-6">
+                <div className="space-y-4">
+                  <Link href="/admin" className="block text-xl font-bold">
+                    Admin Dashboard
+                  </Link>
+                  <Link href="/menu" className="block">
+                    Menu
+                  </Link>
+                  <Link href="/orders" className="block">
+                    Orders
+                  </Link>
+                  <Link href="/analytics" className="block">
+                    Analytics
+                  </Link>
+                  <Link href="/feedback" className="block">
+                    Feedback
+                  </Link>
+                  <Link href="/users" className="block">
+                    Users
+                  </Link>
+                </div>
+              </aside>
+            )}
+            {/* Separator Line */}
+            {profile?.role === 'admin' && (
+              <div className="border-l border-gray-300 h-full fixed top-16 left-64"></div>
+            )}
+          </>
         )}
-        <main>{children}</main>
+        <main className={`${profile?.role === 'admin' ? 'ml-64' : ''}`}>{children}</main>
       </body>
     </html>
   )
