@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { withAuth } from '@/components/withAuth'
 import { User } from '@supabase/supabase-js'
+import Link from 'next/link'
 
 interface MenuItem {
   id: number
@@ -52,7 +53,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
   useEffect(() => {
     fetchRestaurant()
-  }, [])
+  }, [user.id])
 
   useEffect(() => {
     if (restaurant) {
@@ -71,17 +72,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // No restaurant found, create one
-          const { data: newRestaurant, error: createError } = await supabase
-            .from('restaurants')
-            .insert([
-              { name: 'My Restaurant', description: 'Restaurant description', admin_id: user.id }
-            ])
-            .select()
-            .single()
-
-          if (createError) throw createError
-          setRestaurant(newRestaurant)
+          setError('No restaurant found for this admin. Please contact support.')
         } else {
           throw error
         }
@@ -91,6 +82,8 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     } catch (error) {
       console.error('Error fetching restaurant:', error)
       setError('Failed to load restaurant information')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -130,8 +123,6 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     } catch (error) {
       console.error('Error fetching orders:', error)
       setError('Failed to load orders')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -218,6 +209,10 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard - {restaurant.name}</h1>
       <p className="mb-4">Welcome, {user.email}</p>
+      
+      <Link href="/admin/analytics" className="bg-blue-500 text-white p-2 rounded inline-block mb-4">
+        View Analytics
+      </Link>
       
       {notification && (
         <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>

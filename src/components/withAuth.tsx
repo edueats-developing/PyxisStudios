@@ -27,16 +27,18 @@ export function withAuth(WrappedComponent: React.ComponentType<any>, allowedRole
 
             console.log('withAuth - Fetched profile:', profile, 'Error:', error)
 
+            if (error) throw error
+
             if (profile && allowedRoles.includes(profile.role as Role)) {
               console.log('withAuth - User has required role:', profile.role)
               setUser(user)
             } else {
               console.log('withAuth - User does not have required role')
-              router.push('/login')
+              throw new Error('Unauthorized')
             }
           } else {
             console.log('withAuth - No user found')
-            router.push('/login')
+            throw new Error('Not authenticated')
           }
         } catch (error) {
           console.error('Error checking authentication:', error)
@@ -47,7 +49,7 @@ export function withAuth(WrappedComponent: React.ComponentType<any>, allowedRole
       }
 
       checkAuth()
-    }, [])
+    }, [router])
 
     if (loading) {
       return <div className="flex justify-center items-center min-h-screen">

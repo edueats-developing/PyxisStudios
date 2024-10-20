@@ -35,39 +35,24 @@ export default function Login() {
         if (authError) throw authError
 
         if (authData.user) {
-          // Insert the user's role into the profiles table
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              { id: authData.user.id, role: role }
-            ])
-
-          if (profileError) throw profileError
-
           if (role === 'admin') {
-            // Create a restaurant for the admin
-            const { data: restaurantData, error: restaurantError } = await supabase
-              .from('restaurants')
+            // Call the function to register admin and create restaurant
+            const { data, error: funcError } = await supabase.rpc('register_admin_and_create_restaurant', {
+              admin_id: authData.user.id,
+              rest_name: restaurantName,
+              rest_description: restaurantDescription
+            })
+
+            if (funcError) throw funcError
+          } else {
+            // Insert the user's role into the profiles table
+            const { error: profileError } = await supabase
+              .from('profiles')
               .insert([
-                { 
-                  name: restaurantName, 
-                  description: restaurantDescription,
-                  admin_id: authData.user.id
-                }
+                { id: authData.user.id, role: role }
               ])
-              .select()
 
-            if (restaurantError) throw restaurantError
-
-            // Update the profile with the restaurant_id
-            if (restaurantData && restaurantData.length > 0) {
-              const { error: updateProfileError } = await supabase
-                .from('profiles')
-                .update({ restaurant_id: restaurantData[0].id })
-                .eq('id', authData.user.id)
-
-              if (updateProfileError) throw updateProfileError
-            }
+            if (profileError) throw profileError
           }
 
           alert('Registration successful! You can now log in.')
