@@ -75,7 +75,7 @@ export default function RootLayout({
         {!isLandingPage && (
           <>
             {/* Horizontal Navbar */}
-            <nav className="bg-[#00A7A2] p-4 text-white z-10 relative">
+            <nav className="bg-[#00A7A2] p-4 text-white fixed top-0 w-full z-10">
               <div className="container mx-auto flex justify-between items-center">
                 <Link href="/" className="text-2xl font-bold">
                   EduEats
@@ -134,7 +134,7 @@ export default function RootLayout({
                   <Link href="/orders" className="block">
                     Orders
                   </Link>
-                  <Link href="/analytics" className="block">
+                  <Link href="/admin/analytics" className="block">
                     Analytics
                   </Link>
                   <Link href="/feedback" className="block">
@@ -152,7 +152,7 @@ export default function RootLayout({
             )}
           </>
         )}
-        <main className={`${profile?.role === 'admin' ? 'ml-64' : ''}`}>{children}</main>
+        <main className={`${profile?.role === 'admin' ? 'ml-64' : ''} pt-16`}>{children}</main>
       </body>
     </html>
   )
