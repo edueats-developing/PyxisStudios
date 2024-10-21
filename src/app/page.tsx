@@ -23,8 +23,8 @@ export default async function Home() {
             <Image
               src="/edueats_logo.png"
               alt="EduEats Logo"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               className="mr-2"
             />
             <h1 className="text-2xl font-bold text-[#00A7A2]">EduEats</h1>
@@ -40,10 +40,10 @@ export default async function Home() {
         <section className="bg-[#00A7A2] text-white py-20">
           <div className="container mx-auto text-center">
             <Image
-              src="/edueats_logo.png"
-              alt="EduEats Logo"
-              width={100}
-              height={100}
+              src="/edueats_logo_white.png"
+              alt="EduEats White Logo"
+              width={300}
+              height={300}
               className="mx-auto mb-6"
             />
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to EduEats</h1>
