@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
-import { withAuth } from '@/components/withAuth'
+import Link from 'next/link'
 
 interface Order {
   id: number
@@ -21,25 +21,37 @@ interface OrderItem {
   id: number
   quantity: number
   menu_item: {
+    id: number
     name: string
-    price: string
+    price: number
   }
 }
 
-function OrderHistory() {
+export default function OrderHistory() {
+  const [user, setUser] = useState<User | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchOrders()
+    fetchUser()
   }, [])
 
-  async function fetchOrders() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No user found')
+  useEffect(() => {
+    if (user) {
+      fetchOrders()
+    }
+  }, [user])
 
+  async function fetchUser() {
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
+  }
+
+  async function fetchOrders() {
+    if (!user) return
+
+    try {
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -48,14 +60,13 @@ function OrderHistory() {
           items:order_items(
             id,
             quantity,
-            menu_item:menu_items(name, price)
+            menu_item:menu_items(id, name, price)
           )
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-
       setOrders(data || [])
     } catch (error) {
       console.error('Error fetching orders:', error)
@@ -65,42 +76,47 @@ function OrderHistory() {
     }
   }
 
-  if (loading) {
-    return <div className="text-center">Loading...</div>
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>
-  }
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Order History</h1>
-      {orders.length === 0 ? (
-        <p>You haven't placed any orders yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {orders.map((order) => (
-            <li key={order.id} className="border p-4 rounded shadow">
-              <p><strong>Order ID:</strong> {order.id}</p>
-              <p><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
-              <p><strong>Restaurant:</strong> {order.restaurant ? order.restaurant.name : 'Unknown'}</p>
-              <p><strong>Total:</strong> ${order.total_price.toFixed(2)}</p>
-              <p><strong>Status:</strong> {order.status}</p>
-              <h3 className="font-semibold mt-2">Items:</h3>
-              <ul className="list-disc list-inside">
+      <div className="space-y-4">
+        {orders.map((order) => (
+          <div key={order.id} className="bg-white p-4 rounded shadow">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-xl font-semibold">Order #{order.id}</h2>
+              <span className="text-sm text-gray-500">
+                {new Date(order.created_at).toLocaleString()}
+              </span>
+            </div>
+            <p className="mb-2"><strong>Restaurant:</strong> {order.restaurant.name}</p>
+            <p className="mb-2"><strong>Status:</strong> {order.status}</p>
+            <p className="mb-2"><strong>Total:</strong> ${order.total_price.toFixed(2)}</p>
+            <h3 className="font-semibold mt-2">Items:</h3>
+            <ul className="list-disc list-inside">
+              {order.items.map((item) => (
+                <li key={item.id}>
+                  {item.menu_item.name} - Quantity: {item.quantity} - Price: ${item.menu_item.price.toFixed(2)}
+                </li>
+              ))}
+            </ul>
+            {order.status === 'delivered' && (
+              <div className="mt-4">
+                <Link href={`/feedback?type=restaurant&id=${order.restaurant.id}`} className="bg-blue-500 text-white p-2 rounded mr-2">
+                  Rate Restaurant
+                </Link>
                 {order.items.map((item) => (
-                  <li key={item.id}>
-                    {item.menu_item.name} - Quantity: {item.quantity} - Price: ${parseFloat(item.menu_item.price).toFixed(2)}
-                  </li>
+                  <Link key={item.id} href={`/feedback?type=menu_item&id=${item.menu_item.id}`} className="bg-green-500 text-white p-2 rounded mr-2">
+                    Rate {item.menu_item.name}
+                  </Link>
                 ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-      )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
-
-export default withAuth(OrderHistory, ['admin', 'driver', 'customer'])
