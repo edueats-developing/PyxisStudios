@@ -84,7 +84,7 @@ function OrderHistory() {
             <li key={order.id} className="border p-4 rounded shadow">
               <p><strong>Order ID:</strong> {order.id}</p>
               <p><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
-              <p><strong>Restaurant:</strong> {order.restaurant.name}</p>
+              <p><strong>Restaurant:</strong> {order.restaurant ? order.restaurant.name : 'Unknown'}</p>
               <p><strong>Total:</strong> ${order.total_price.toFixed(2)}</p>
               <p><strong>Status:</strong> {order.status}</p>
               <h3 className="font-semibold mt-2">Items:</h3>
@@ -103,4 +103,4 @@ function OrderHistory() {
   )
 }
 
-export default withAuth(OrderHistory, ['customer'])
+export default withAuth(OrderHistory, ['admin', 'driver', 'customer'])
