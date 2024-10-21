@@ -1,38 +1,37 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../../lib/supabase'
 import { User } from '@supabase/supabase-js'
+import { useCart } from '../../components/CartContext'
+import AddToCartButton from '../../components/AddToCartButton'
+import CheckoutButton from '../../components/CheckoutButton'
 
 interface MenuItem {
-  id: number
-  name: string
-  description: string
-  price: string
-  category: string
-  image_url: string | null
-  restaurant_id: number
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image_url: string | null;
+  restaurant_id: number;
 }
 
 interface Restaurant {
-  id: number
-  name: string
-  description: string
-}
-
-interface CartItem extends MenuItem {
-  quantity: number
+  id: number;
+  name: string;
+  description: string;
 }
 
 export default function Menu() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [cart, setCart] = useState<CartItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRestaurant, setSelectedRestaurant] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { items: cart } = useCart()
 
   useEffect(() => {
     fetchUser()
@@ -92,71 +91,6 @@ export default function Menu() {
     }
   }
 
-  function addToCart(item: MenuItem) {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.id === item.id)
-      if (existingItem) {
-        return prevCart.map(cartItem =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        )
-      } else {
-        return [...prevCart, { ...item, quantity: 1 }]
-      }
-    })
-  }
-
-  function removeFromCart(itemId: number) {
-    setCart(prevCart => prevCart.filter(item => item.id !== itemId))
-  }
-
-  async function checkout() {
-    if (!user) {
-      alert('Please log in to place an order')
-      return
-    }
-
-    try {
-      const total = cart.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0)
-      
-      // Create the order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([{ 
-          user_id: user.id, 
-          restaurant_id: selectedRestaurant,
-          total_price: total, 
-          status: 'pending' 
-        }])
-        .select()
-
-      if (orderError) throw orderError
-
-      const orderId = orderData[0].id
-
-      // Create order items
-      const orderItems = cart.map(item => ({
-        order_id: orderId,
-        menu_item_id: item.id,
-        quantity: item.quantity,
-        price: parseFloat(item.price)
-      }))
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems)
-
-      if (itemsError) throw itemsError
-
-      alert('Order placed successfully!')
-      setCart([])
-    } catch (error) {
-      console.error('Error placing order:', error)
-      alert('Failed to place order. Please try again.')
-    }
-  }
-
   const filteredItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -205,17 +139,12 @@ export default function Menu() {
           <div key={item.id} className="border p-4 rounded">
             <h3 className="font-bold">{item.name}</h3>
             <p>{item.description}</p>
-            <p className="font-semibold">${item.price}</p>
+            <p className="font-semibold">${item.price.toFixed(2)}</p>
             <p>Category: {item.category}</p>
             {item.image_url && (
               <img src={item.image_url} alt={item.name} className="w-full h-40 object-cover mt-2 rounded" />
             )}
-            <button
-              onClick={() => addToCart(item)}
-              className="mt-2 bg-blue-500 text-white p-2 rounded"
-            >
-              Add to Cart
-            </button>
+            <AddToCartButton item={item} />
           </div>
         ))}
       </div>
@@ -224,25 +153,13 @@ export default function Menu() {
         <h2 className="text-xl font-bold mb-2">Cart</h2>
         {cart.map((item) => (
           <div key={item.id} className="mb-2 flex justify-between items-center">
-            <span>{item.name} - ${item.price} x {item.quantity}</span>
-            <button
-              onClick={() => removeFromCart(item.id)}
-              className="bg-red-500 text-white p-1 rounded"
-            >
-              Remove
-            </button>
+            <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
           </div>
         ))}
         <p className="font-bold">
-          Total: ${cart.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0).toFixed(2)}
+          Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
         </p>
-        <button
-          onClick={checkout}
-          className="mt-4 bg-green-500 text-white p-2 rounded"
-          disabled={cart.length === 0}
-        >
-          Checkout
-        </button>
+        <CheckoutButton user={user} selectedRestaurant={selectedRestaurant} />
       </div>
     </div>
   )
