@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { withAuth } from '@/components/withAuth'
 
 interface Order {
   id: number
@@ -27,7 +28,7 @@ interface OrderItem {
   }
 }
 
-export default function OrderHistory() {
+function OrderHistory() {
   const [user, setUser] = useState<User | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,16 +55,14 @@ export default function OrderHistory() {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select(`
-          *,
-          restaurant:restaurants(id, name),
+        .select(`*
+          , restaurant:restaurants(id, name),
           items:order_items(
             id,
             quantity,
             menu_item:menu_items(id, name, price)
-          )
-        `)
-        .eq('user_id', user.id)
+          )`)
+        .eq('user_id', user.id) // Adjust this if admins and drivers need to see all orders
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -91,7 +90,7 @@ export default function OrderHistory() {
                 {new Date(order.created_at).toLocaleString()}
               </span>
             </div>
-            <p className="mb-2"><strong>Restaurant:</strong> {order.restaurant.name}</p>
+            <p><strong>Restaurant:</strong> {order.restaurant ? order.restaurant.name : 'Unknown'}</p>
             <p className="mb-2"><strong>Status:</strong> {order.status}</p>
             <p className="mb-2"><strong>Total:</strong> ${order.total_price.toFixed(2)}</p>
             <h3 className="font-semibold mt-2">Items:</h3>
@@ -120,3 +119,6 @@ export default function OrderHistory() {
     </div>
   )
 }
+
+// Wrap the component with withAuth to restrict access based on roles
+export default withAuth(OrderHistory, ['admin', 'driver', 'customer']) //ajustable if more changes need to be made

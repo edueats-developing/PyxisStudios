@@ -76,10 +76,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <CartProvider>
+          {/* Avoid rendering navbar and sidebar on landing page */}
           {!isLandingPage && (
             <>
               {/* Horizontal Navbar */}
-              <nav className="bg-[#00A7A2] p-4 text-white z-10 relative">
+              <nav className="bg-[#00A7A2] p-4 text-white fixed top-0 w-full z-10">
                 <div className="container mx-auto flex justify-between items-center">
                   <Link href="/" className="text-2xl font-bold">
                     EduEats
@@ -107,9 +108,6 @@ export default function RootLayout({
                             <Link href="/admin" className="mr-4 hover:text-[#33B8B4]">
                               Admin Dashboard
                             </Link>
-                            <button onClick={handleLogout} className="hover:text-[#33B8B4]">
-                              Logout
-                            </button>
                           </>
                         )}
                         {profile?.role === 'driver' && (
@@ -122,6 +120,9 @@ export default function RootLayout({
                             Profile
                           </Link>
                         )}
+                        <button onClick={handleLogout} className="hover:text-[#33B8B4]">
+                          Logout
+                        </button>
                       </>
                     ) : (
                       <Link href="/login" className="hover:text-[#33B8B4]">
@@ -131,6 +132,7 @@ export default function RootLayout({
                   </div>
                 </div>
               </nav>
+
               {/* Vertical Sidebar for Admin */}
               {profile?.role === 'admin' && (
                 <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-6">
@@ -144,7 +146,7 @@ export default function RootLayout({
                     <Link href="/orders" className="block">
                       Orders
                     </Link>
-                    <Link href="/analytics" className="block">
+                    <Link href="/admin/analytics" className="block">
                       Analytics
                     </Link>
                     <Link href="/feedback" className="block">
@@ -156,13 +158,18 @@ export default function RootLayout({
                   </div>
                 </aside>
               )}
+
               {/* Separator Line */}
               {profile?.role === 'admin' && (
                 <div className="border-l border-gray-300 h-full fixed top-16 left-64"></div>
               )}
             </>
           )}
-          <main className={`${profile?.role === 'admin' ? 'ml-64' : ''}`}>{children}</main>
+
+          {/* Conditionally apply margin-top only when it's not the landing page */}
+          <main className={`${!isLandingPage ? 'mt-16' : ''} ${!isLandingPage && profile?.role === 'admin' ? 'ml-64' : ''}`}>
+            {children}
+          </main>
         </CartProvider>
       </body>
     </html>
