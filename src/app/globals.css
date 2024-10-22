@@ -18,3 +18,55 @@ body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-rgb));
 }
+/* Styles for hoverable buttons in the admin sidebar */
+.sidebar-link {
+  display: block;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-radius: 15px; /* Full-rounded */
+  font-weight: normal;
+  color: #333;
+  background-color: transparent;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-link:hover {
+  background-color: #e5e7eb; /* Gray on hover */
+  color: #333;
+}
+
+.sidebar-link-active {
+  background-color: #00A7A2; /* Turquoise when active */
+  color: white;
+}
+.horizontal-link {
+  display: inline-block;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px; /* Full-rounded */
+  font-weight: normal;
+  color: white;
+  background-color: transparent;
+  margin-right: 0.5rem; /* Space between links */
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.horizontal-link:hover {
+  background-color: #e5e7eb; /* Gray on hover */
+  color: #333;
+}
+
+.horizontal-link-active {
+  background-color: #00A7A2; /* Turquoise when active */
+  color: white;
+}
+
+.horizontal-separator {
+  width: 192px;
+  height: 5px;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  margin: 0 8px;
+  display: inline-block;
+}
+

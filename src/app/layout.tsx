@@ -8,17 +8,14 @@ import { User } from '@supabase/supabase-js'
 import './globals.css'
 import { CartProvider } from '../components/CartContext'
 import ShoppingCart from '../components/ShoppingCart'
+import Image from 'next/image'
 
 interface Profile {
   id: string
   role: 'admin' | 'driver' | 'customer'
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [showCart, setShowCart] = useState(false)
@@ -28,7 +25,6 @@ export default function RootLayout({
   useEffect(() => {
     const fetchUserAndProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      console.log('Fetched user:', user)
       setUser(user)
 
       if (user) {
@@ -37,7 +33,6 @@ export default function RootLayout({
           .select('*')
           .eq('id', user.id)
           .single()
-        console.log('Fetched profile:', profile, 'Error:', error)
         if (!error) {
           setProfile(profile)
         }
@@ -48,7 +43,6 @@ export default function RootLayout({
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session)
         if (session) {
           setUser(session.user)
           fetchUserAndProfile()
@@ -67,65 +61,63 @@ export default function RootLayout({
     router.push('/login')
   }
 
-  console.log('Current user:', user)
-  console.log('Current profile:', profile)
-
   const isLandingPage = pathname === '/'
 
   return (
     <html lang="en">
       <body>
         <CartProvider>
-          {/* Avoid rendering navbar and sidebar on landing page */}
           {!isLandingPage && (
             <>
               {/* Horizontal Navbar */}
-              <nav className="bg-[#00A7A2] p-4 text-white fixed top-0 w-full z-10">
+              <nav className="bg-[#00A7A2] p-3 text-white fixed top-0 w-full z-10">
                 <div className="container mx-auto flex justify-between items-center">
-                  <Link href="/" className="text-2xl font-bold">
-                    EduEats
-                  </Link>
+                  <div className="flex items-center">
+                    <Image
+                      src="/edueats_logo_white.png"
+                      alt="EduEats White Logo"
+                      width={40}
+                      height={40}
+                      className="mr-2"
+                    />
+                    <Link href="/" className="text-2xl font-bold">
+                      EduEats
+                    </Link>
+                  </div>
                   <div>
                     {user ? (
                       <>
-                        <Link href="/menu" className="mr-4 hover:text-[#33B8B4]">
+                        <Link href="/menu" className={`horizontal-link ${pathname === '/menu' ? 'horizontal-link-active' : ''}`}>
                           Menu
                         </Link>
-                        <Link href="/order-history" className="mr-4 hover:text-[#33B8B4]">
+                        <Link href="/order-history" className={`horizontal-link ${pathname === '/order-history' ? 'horizontal-link-active' : ''}`}>
                           Order History
                         </Link>
-                        <Link href="/order-tracking" className="mr-4 hover:text-[#33B8B4]">
+                        <Link href="/order-tracking" className={`horizontal-link ${pathname === '/order-tracking' ? 'horizontal-link-active' : ''}`}>
                           Track Orders
                         </Link>
-                        <button onClick={() => setShowCart(!showCart)} className="mr-4 hover:text-[#33B8B4]">
+                        <button onClick={() => setShowCart(!showCart)} className="horizontal-link">
                           Cart
                         </button>
-                        <Link href="/account" className="mr-4 hover:text-[#33B8B4]">
+                        <Link href="/account" className={`horizontal-link ${pathname === '/account' ? 'horizontal-link-active' : ''}`}>
                           Account
                         </Link>
-                        {profile?.role === 'admin' && (
-                          <>
-                            <Link href="/admin" className="mr-4 hover:text-[#33B8B4]">
-                              Admin Dashboard
-                            </Link>
-                          </>
-                        )}
                         {profile?.role === 'driver' && (
-                          <Link href="/driver" className="mr-4 hover:text-[#33B8B4]">
+                          <Link href="/driver" className={`horizontal-link ${pathname === '/driver' ? 'horizontal-link-active' : ''}`}>
                             Driver Dashboard
                           </Link>
                         )}
                         {profile?.role !== 'admin' && (
-                          <Link href="/profile" className="mr-4 hover:text-[#33B8B4]">
+                          <Link href="/profile" className={`horizontal-link ${pathname === '/profile' ? 'horizontal-link-active' : ''}`}>
                             Profile
                           </Link>
                         )}
-                        <button onClick={handleLogout} className="hover:text-[#33B8B4]">
+                        <button onClick={handleLogout} className="horizontal-link">
                           Logout
                         </button>
                       </>
                     ) : (
-                      <Link href="/login" className="hover:text-[#33B8B4]">
+                      <Link href="/login" className="horizontal-link">
                         Login
                       </Link>
                     )}
@@ -137,22 +129,23 @@ export default function RootLayout({
               {profile?.role === 'admin' && (
                 <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-6">
                   <div className="space-y-4">
-                    <Link href="/admin" className="block text-xl font-bold">
-                      Admin Dashboard
+                    <Link href="/admin" className={`sidebar-link ${pathname === '/admin' ? 'sidebar-link-active' : ''}`}>
+                      Dashboard
                     </Link>
-                    <Link href="/menu" className="block">
+                    <Link href="/menu" className={`sidebar-link ${pathname === '/menu' ? 'sidebar-link-active' : ''}`}>
                       Menu
                     </Link>
-                    <Link href="/orders" className="block">
+                    <Link href="/orders" className={`sidebar-link ${pathname === '/orders' ? 'sidebar-link-active' : ''}`}>
                       Orders
                     </Link>
-                    <Link href="/admin/analytics" className="block">
+                    <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
                       Analytics
                     </Link>
-                    <Link href="/feedback" className="block">
+                    <div className="horizontal-separator"></div>
+                    <Link href="/feedback" className={`sidebar-link ${pathname === '/feedback' ? 'sidebar-link-active' : ''}`}>
                       Feedback
                     </Link>
-                    <Link href="/users" className="block">
+                    <Link href="/users" className={`sidebar-link ${pathname === '/users' ? 'sidebar-link-active' : ''}`}>
                       Users
                     </Link>
                   </div>
@@ -166,7 +159,7 @@ export default function RootLayout({
             </>
           )}
 
-          {/* Conditionally apply margin-top only when it's not the landing page */}
+          {/* Main Content */}
           <main className={`${!isLandingPage ? 'mt-16' : ''} ${!isLandingPage && profile?.role === 'admin' ? 'ml-64' : ''}`}>
             {children}
           </main>
