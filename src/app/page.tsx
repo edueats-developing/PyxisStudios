@@ -18,13 +18,13 @@ export default async function Home() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-md">
-        <div className="container mx-auto py-4 px-6 flex justify-between items-center">
+        <div className="container mx-auto py-3 px-6 flex justify-between items-center">
           <div className="flex items-center">
             <Image
               src="/edueats_logo.png"
               alt="EduEats Logo"
-              width={50}
-              height={50}
+              width={40}
+              height={40}
               className="mr-2"
             />
             <h1 className="text-2xl font-bold text-[#00A7A2]">EduEats</h1>
