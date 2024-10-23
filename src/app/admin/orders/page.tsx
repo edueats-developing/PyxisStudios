@@ -5,8 +5,6 @@ import { supabase } from '@/lib/supabase'
 import { withAuth } from '@/components/withAuth'
 import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
-import '../globals.css'
-import { useRouter, usePathname } from 'next/navigation'
 
 interface MenuItem {
   id: number
@@ -52,7 +50,6 @@ function AdminDashboard({ user }: AdminDashboardProps) {
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
-  const pathname = usePathname()
 
   useEffect(() => {
     fetchRestaurant()
@@ -210,80 +207,52 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard - {restaurant.name}</h1>
+      <h1 className="text-2xl font-bold mb-4">Orders - {restaurant.name}</h1>
       <p className="mb-4">Welcome, {user.email}</p>
       
-      <Link href="../menu" className={`AdminDashboard-link ${pathname === '/menu' ? 'AdminDashboard-link-active' : ''}`}>
-        Menu
-      </Link>
-      {notification && (
-        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {notification.message}
-        </div>
-      )}
-      <Link href="/admin/orders" className={`AdminDashboard-link ${pathname === '/orders' ? 'AdminDashboard-link-active' : ''}`}>
-        Orders
-      </Link>
-      {notification && (
-        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {notification.message}
-        </div>
-      )}
-      <Link href="/admin/analytics" className={`AdminDashboard-link ${pathname === '/analytics' ? 'AdminDashboard-link-active' : ''}`}>
-        Analytics
-      </Link>
-      
-      {notification && (
-        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {notification.message}
-        </div>
-      )}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Add New Menu Item</h2>
-        <form onSubmit={addMenuItem} className="space-y-2">
-          <input
-            type="text"
-            placeholder="Name"
-            value={newItem.name}
-            onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Description"
-            value={newItem.description}
-            onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="number"
-            placeholder="Price"
-            value={newItem.price}
-            onChange={(e) => setNewItem({...newItem, price: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            value={newItem.category}
-            onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)}
-            className="w-full p-2 border rounded"
-          />
-          <button type="submit" className={`AdminDashboard-link  ? 'AdminDashboard-link-active' : ''}`}>Add Item</button>
-        </form>
-      </div>
-</div>
 
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Recent Orders</h2>
+        <ul className="space-y-4">
+          {orders.map((order) => (
+            <li key={order.id} className="border p-4 rounded">
+              <p><strong>Order ID:</strong> {order.id}</p>
+              <p><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
+              <p><strong>Total:</strong> ${order.total_price.toFixed(2)}</p>
+              <p><strong>Status:</strong> {order.status}</p>
+              <p><strong>Items:</strong></p>
+              <ul className="list-disc list-inside ml-4">
+                {order.items.map((item) => (
+                  <li key={item.id}>
+                    {item.menu_item.name} - Quantity: {item.quantity} - Price: ${item.price.toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2">
+                <select
+                  value={order.status}
+                  onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                  className="p-2 border rounded mr-2"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="preparing">Preparing</option>
+                  <option value="ready">Ready</option>
+                  <option value="out_for_delivery">Out for Delivery</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <button
+                  onClick={() => updateOrderStatus(order.id, order.status)}
+                  className="bg-blue-500 text-white p-2 rounded"
+                >
+                  Update Status
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   )
 }
 
