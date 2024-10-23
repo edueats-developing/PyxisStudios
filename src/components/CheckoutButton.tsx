@@ -1,15 +1,14 @@
 import React from 'react';
-import { useCart } from './CartContext';
+import { useCart, CartItem } from './CartContext';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
 
 interface CheckoutButtonProps {
   user: User | null;
-  selectedRestaurant: number | null;
 }
 
-const CheckoutButton: React.FC<CheckoutButtonProps> = ({ user, selectedRestaurant }) => {
+const CheckoutButton: React.FC<CheckoutButtonProps> = ({ user }) => {
   const { items: cart, clearCart } = useCart();
   const router = useRouter();
 
@@ -19,49 +18,65 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({ user, selectedRestauran
       return;
     }
 
-    if (!selectedRestaurant) {
-      alert('Please select a restaurant');
+    if (cart.length === 0) {
+      alert('Your cart is empty');
       return;
     }
 
     try {
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      
-      // Create the order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([{ 
-          user_id: user.id, 
-          restaurant_id: selectedRestaurant,
-          total_price: total, 
-          status: 'pending' 
-        }])
-        .select();
+      // Group cart items by restaurant
+      const groupedCart = cart.reduce((acc, item) => {
+        if (!acc[item.restaurant_id]) {
+          acc[item.restaurant_id] = [];
+        }
+        acc[item.restaurant_id].push(item);
+        return acc;
+      }, {} as Record<number, CartItem[]>);
 
-      if (orderError) throw orderError;
+      const orderIds: number[] = [];
 
-      if (!orderData || orderData.length === 0) {
-        throw new Error('No order data returned');
+      // Create orders for each restaurant
+      for (const [restaurantId, items] of Object.entries(groupedCart)) {
+        const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        
+        // Create the order
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .insert([{ 
+            user_id: user.id, 
+            restaurant_id: parseInt(restaurantId),
+            total_price: total, 
+            status: 'pending' 
+          }])
+          .select();
+
+        if (orderError) throw orderError;
+
+        if (!orderData || orderData.length === 0) {
+          throw new Error('No order data returned');
+        }
+
+        const orderId = orderData[0].id;
+        orderIds.push(orderId);
+
+        // Create order items
+        const orderItems = items.map(item => ({
+          order_id: orderId,
+          menu_item_id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          restaurant_id: item.restaurant_id
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
+
+        if (itemsError) throw itemsError;
       }
 
-      const orderId = orderData[0].id;
-
-      // Create order items
-      const orderItems = cart.map(item => ({
-        order_id: orderId,
-        menu_item_id: item.id,
-        quantity: item.quantity,
-        price: item.price
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
       clearCart();
-      router.push(`/order-confirmation?orderId=${orderId}`);
+      router.push(`/order-confirmation?orderIds=${orderIds.join(',')}`);
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Failed to place order. Please try again.');
