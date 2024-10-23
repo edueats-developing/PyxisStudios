@@ -125,6 +125,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </nav>
 
+              {/* Shopping Cart */}
+              {showCart && (
+                <div className="fixed top-16 right-0 w-96 h-screen bg-white shadow-lg z-20 overflow-y-auto">
+                  <ShoppingCart />
+                </div>
+              )}
+
               {/* Vertical Sidebar for Admin */}
               {profile?.role === 'admin' && (
                 <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-6">
