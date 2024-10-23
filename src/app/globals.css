@@ -70,3 +70,19 @@ body {
   display: inline-block;
 }
 
+.AdminDashboard-link {
+  display: inline-block;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px; /* Full-rounded */
+  font-weight: normal;
+  color: white;
+  background-color: #00A7A2;
+  margin-right: 0.5rem; /* Space between links */
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.AdminDashboard-link:hover {
+  background-color: #e5e7eb; /* Gray on hover */
+  color: #333;
+}

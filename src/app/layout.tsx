@@ -135,7 +135,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <Link href="/menu" className={`sidebar-link ${pathname === '/menu' ? 'sidebar-link-active' : ''}`}>
                       Menu
                     </Link>
-                    <Link href="/orders" className={`sidebar-link ${pathname === '/orders' ? 'sidebar-link-active' : ''}`}>
+                    <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'sidebar-link-active' : ''}`}>
                       Orders
                     </Link>
                     <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
