@@ -142,7 +142,7 @@ export default function Menu() {
             <p className="font-semibold">${item.price.toFixed(2)}</p>
             <p>Category: {item.category}</p>
             {item.image_url && (
-              <img src={item.image_url} alt={item.name} className="w-full h-40 object-cover mt-2 rounded" />
+              <img src={item.image_url} alt={item.name} className="w-full h-70 object-cover mt-2 rounded" style={{ marginBottom: '1rem' }} />
             )}
             <AddToCartButton item={item} />
           </div>
