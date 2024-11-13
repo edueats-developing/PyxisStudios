@@ -1,4 +1,4 @@
 node_modules
 .next
 .env.local
-/src/types/.env.d.ts
+src/types/env.d.ts
