@@ -140,11 +140,11 @@ export default async function Home() {
             <div className="w-full md:w-1/3">
               <h3 className="text-xl font-semibold mb-2">Contact Us</h3>
               <p>Email: support@edueats.com</p>
-              <p>Phone: (123) 456-7890</p>
+              <p>Phone: 0478880903</p>
             </div>
           </div>
           <div className="mt-8 text-center">
-            <p>&copy; 2023 EduEats. All rights reserved.</p>
+            <p>&copy; 2024 EduEats All rights reserved.</p>
           </div>
         </div>
       </footer>
