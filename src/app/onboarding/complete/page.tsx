@@ -7,9 +7,46 @@ export default function OnboardingCompletePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  // Get the account ID from URL params (should be passed from create-connected-account)
+  // Get the account ID and other params from URL
   const accountId = searchParams.get('accountId');
+  const email = searchParams.get('email');
+  const businessName = searchParams.get('businessName');
+
+  useEffect(() => {
+    const completeOnboarding = async () => {
+      if (!accountId || !email || !businessName) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/complete-onboarding', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            accountId,
+            email,
+            businessName,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error('Failed to complete onboarding');
+        }
+        
+        setMessage(data.message || 'Account setup complete! Please check your email.');
+      } catch (error) {
+        console.error('Error completing onboarding:', error);
+        setMessage('There was an error setting up your account. Please contact support.');
+      }
+    };
+
+    completeOnboarding();
+  }, [accountId, email, businessName]);
 
   const openDashboard = async () => {
     try {
@@ -68,8 +105,19 @@ export default function OnboardingCompletePage() {
           </svg>
         </div>
         <h1 className="text-2xl font-bold mb-4">Onboarding Complete!</h1>
+        
+        {/* Email confirmation message */}
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+          <p className="text-blue-800 mb-2">Important Next Steps:</p>
+          <p className="text-gray-600">
+            1. Check your email ({email}) for a confirmation link<br/>
+            2. Click the link to set your password<br/>
+            3. Use your email and password to log in
+          </p>
+        </div>
+        
         <p className="text-gray-600 mb-6">
-          Your account has been successfully set up. You can now start accepting payments.
+          {message || 'Your Stripe account has been successfully set up.'}
         </p>
         
         {accountId && (
