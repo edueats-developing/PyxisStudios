@@ -7,7 +7,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
 
 // Function to manually add a user (for development and testing purposes)
 export async function addManualUser(email: string, password: string, role: 'admin' | 'driver' | 'customer') {
@@ -16,6 +22,7 @@ export async function addManualUser(email: string, password: string, role: 'admi
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/login`,
         data: {
           role: role,
         },

@@ -4,9 +4,17 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
+// Create admin client with service role key for user management
+const adminSupabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: false,
+      detectSessionInUrl: false
+    }
+  }
 );
 
 export default function RegisterPage() {
@@ -40,36 +48,48 @@ export default function RegisterPage() {
     try {
       setIsLoading(true);
 
-      // Sign up user with auto-confirmation disabled
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Create user with admin client
+      const { data: userData, error: createError } = await adminSupabase.auth.admin.createUser({
         email: email!,
-        password,
-        options: {
-          data: {
-            stripe_account_id: accountId,
-            business_name: businessName,
-            role: 'admin'
-          },
-          emailRedirectTo: `${window.location.origin}/register/success`
+        password: password,
+        email_confirm: false,
+        user_metadata: {
+          stripe_account_id: accountId,
+          business_name: businessName,
+          role: 'admin'
         }
       });
 
-      if (signUpError) {
-        console.error('Sign up error:', signUpError);
-        throw signUpError;
+      if (createError) {
+        console.error('User creation error:', createError);
+        throw createError;
       }
 
-      if (!signUpData.user) {
+      if (!userData.user) {
         throw new Error('Failed to create user account');
       }
 
       // Store restaurant details for later
       localStorage.setItem('pendingRestaurant', JSON.stringify({
         name: businessName,
-        admin_id: signUpData.user.id,
+        admin_id: userData.user.id,
         stripe_account_id: accountId,
         email: email
       }));
+
+      // Send magic link for email verification
+      const { error: magicLinkError } = await adminSupabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: email!,
+        options: {
+          redirectTo: `${window.location.origin}/register/success`
+        }
+      });
+
+      if (magicLinkError) {
+        console.error('Error sending verification email:', magicLinkError);
+        throw magicLinkError;
+      }
 
       // Redirect to success page
       router.push('/register/success');
