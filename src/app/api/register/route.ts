@@ -103,6 +103,22 @@ export async function POST(req: Request) {
       metadata: signUpData.user.user_metadata
     });
 
+    // Explicitly create profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: signUpData.user.id,
+        role: 'admin',
+      });
+
+    if (profileError) {
+      console.error('Failed to create profile:', profileError);
+      return NextResponse.json(
+        { error: 'Failed to create user profile', details: profileError.message },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       user: {
