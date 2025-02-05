@@ -119,6 +119,54 @@ export async function POST(req: Request) {
       );
     }
 
+    // Log the data we're about to insert
+    console.log('Attempting to create restaurant with data:', {
+      name: businessName,
+      description: `${businessName} on EduEats`,
+      admin_id: signUpData.user.id,
+      stripe_account_id: accountId,
+      status: 'pending_verification'
+    });
+
+    // Create restaurant record
+    const { data: restaurantData, error: restaurantError } = await supabase
+      .from('restaurants')
+      .insert({
+        name: businessName,
+        description: `${businessName} on EduEats`,
+        admin_id: signUpData.user.id,
+        stripe_account_id: accountId,
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (restaurantError) {
+      console.error('Failed to create restaurant:', {
+        error: restaurantError,
+        code: restaurantError.code,
+        details: restaurantError.details,
+        message: restaurantError.message,
+        hint: restaurantError.hint,
+        data: {
+          name: businessName,
+          description: `${businessName} on EduEats`,
+          admin_id: signUpData.user.id,
+          stripe_account_id: accountId,
+          status: 'pending_verification'
+        }
+      });
+      return NextResponse.json(
+        { 
+          error: 'Failed to create restaurant record', 
+          details: restaurantError.message,
+          code: restaurantError.code,
+          hint: restaurantError.hint
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       user: {
