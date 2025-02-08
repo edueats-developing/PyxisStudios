@@ -144,7 +144,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="mt-8 text-center">
-            <p>&copy; 2024 EduEats All rights reserved.</p>
+            <p>&copy; 2025 EduEats All rights reserved.</p>
           </div>
         </div>
       </footer>
