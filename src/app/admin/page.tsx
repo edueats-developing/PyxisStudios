@@ -7,6 +7,7 @@ import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import '../globals.css'
 import { useRouter, usePathname } from 'next/navigation'
+import RestaurantInfoPopup from '@/components/RestaurantInfoPopup'
 
 interface MenuItem {
   id: number
@@ -21,6 +22,11 @@ interface Restaurant {
   id: number
   name: string
   description: string
+  address: string | null
+  phone: string | null
+  admin_id: string
+  created_at: string
+  updated_at: string
 }
 
 interface Order {
@@ -67,11 +73,14 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
   async function fetchRestaurant() {
     try {
+      console.log('Fetching restaurant for user:', user.id);
       const { data, error } = await supabase
         .from('restaurants')
         .select('*')
         .eq('admin_id', user.id)
-        .single()
+        .single();
+      
+      console.log('Restaurant fetch result:', { data, error });
 
       if (error) {
         if (error.code === 'PGRST116') {
@@ -210,6 +219,13 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
   return (
     <div className="container mx-auto p-4">
+      {/* Only show popup after loading and if restaurant exists */}
+      {!loading && restaurant && (
+        <RestaurantInfoPopup 
+          key={user.id} 
+          restaurant={restaurant}
+        />
+      )}
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard - {restaurant.name}</h1>
       <p className="mb-4">Welcome, {user.email}</p>
       
