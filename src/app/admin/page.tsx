@@ -21,7 +21,7 @@ interface MenuItem {
 interface Restaurant {
   id: number
   name: string
-  description: string
+  description: string | null
   address: string | null
   phone: string | null
   admin_id: string
@@ -80,7 +80,17 @@ function AdminDashboard({ user }: AdminDashboardProps) {
         .eq('admin_id', user.id)
         .single();
       
-      console.log('Restaurant fetch result:', { data, error });
+      console.log('Restaurant fetch result:', { 
+        data: {
+          id: data?.id,
+          name: data?.name,
+          address: data?.address,
+          phone: data?.phone,
+          description: data?.description,
+          admin_id: data?.admin_id
+        }, 
+        error 
+      });
 
       if (error) {
         if (error.code === 'PGRST116') {
@@ -223,7 +233,25 @@ function AdminDashboard({ user }: AdminDashboardProps) {
       {!loading && restaurant && (
         <RestaurantInfoPopup 
           key={user.id} 
-          restaurant={restaurant}
+          restaurant={{
+            id: restaurant.id,
+            name: restaurant.name,
+            address: restaurant.address,
+            phone: restaurant.phone,
+            description: restaurant.description,
+            admin_id: restaurant.admin_id
+          }}
+          onUpdate={async () => {
+            console.log('Restaurant info updated, refreshing data...');
+            await fetchRestaurant();
+            console.log('Restaurant data refreshed:', {
+              id: restaurant.id,
+              name: restaurant.name,
+              address: restaurant.address,
+              phone: restaurant.phone,
+              description: restaurant.description
+            });
+          }}
         />
       )}
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard - {restaurant.name}</h1>
