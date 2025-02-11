@@ -9,6 +9,7 @@ import './globals.css'
 import { CartProvider } from '../components/CartContext'
 import ShoppingCart from '../components/ShoppingCart'
 import Image from 'next/image'
+import { Cog6ToothIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
 
 interface Profile {
   id: string
@@ -84,37 +85,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       EduEats
                     </Link>
                   </div>
-                  <div>
+                  <div className="flex items-center space-x-4">
                     {user ? (
                       <>
-                        <Link href="/menu" className={`horizontal-link ${pathname === '/menu' ? 'horizontal-link-active' : ''}`}>
+                        <Link href="/menu" className={`horizontal-link flex items-center ${pathname === '/menu' ? 'horizontal-link-active' : ''}`}>
                           Menu
                         </Link>
-                        <Link href="/order-history" className={`horizontal-link ${pathname === '/order-history' ? 'horizontal-link-active' : ''}`}>
-                          Order History
-                        </Link>
-                        <Link href="/order-tracking" className={`horizontal-link ${pathname === '/order-tracking' ? 'horizontal-link-active' : ''}`}>
-                          Track Orders
-                        </Link>
-                        <button onClick={() => setShowCart(!showCart)} className="horizontal-link">
-                          Cart
+                        <button 
+                          onClick={() => setShowCart(!showCart)} 
+                          className="horizontal-link flex items-center p-2"
+                        >
+                          <ShoppingCartIcon className="h-6 w-6" />
                         </button>
-                        <Link href="/account" className={`horizontal-link ${pathname === '/account' ? 'horizontal-link-active' : ''}`}>
-                          Account
-                        </Link>
                         {profile?.role === 'driver' && (
-                          <Link href="/driver" className={`horizontal-link ${pathname === '/driver' ? 'horizontal-link-active' : ''}`}>
+                          <Link href="/driver" className={`horizontal-link flex items-center ${pathname === '/driver' ? 'horizontal-link-active' : ''}`}>
                             Driver Dashboard
                           </Link>
                         )}
-                        {profile?.role !== 'admin' && (
-                          <Link href="/profile" className={`horizontal-link ${pathname === '/profile' ? 'horizontal-link-active' : ''}`}>
-                            Profile
-                          </Link>
-                        )}
-                        <button onClick={handleLogout} className="horizontal-link">
-                          Logout
-                        </button>
+                        <Link 
+                          href="/settings" 
+                          className={`horizontal-link flex items-center p-2 ${pathname === '/settings' ? 'horizontal-link-active' : ''}`}
+                        >
+                          <Cog6ToothIcon className="h-6 w-6" />
+                        </Link>
                       </>
                     ) : (
                       <Link href="/login" className="horizontal-link">
