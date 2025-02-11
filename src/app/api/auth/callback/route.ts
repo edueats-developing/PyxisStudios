@@ -3,16 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-// Helper function to validate school email domain
-const isValidSchoolEmail = (email: string): boolean => {
-  // This will be configurable via env var when Microsoft credentials are set up
-  // const allowedDomains = process.env.NEXT_PUBLIC_MICROSOFT_ALLOWED_DOMAINS?.split(',') || [];
-  // return allowedDomains.some(domain => email.toLowerCase().endsWith(domain.toLowerCase()));
-  
-  // For now, allow all email domains since we don't have the Microsoft setup yet
-  return true;
-};
-
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -33,14 +23,6 @@ export async function GET(request: Request) {
       if (session?.user) {
         const isAzureLogin = session.user.app_metadata.provider === 'azure';
         
-        // For Azure/Microsoft logins, validate school email
-        if (isAzureLogin) {
-          const userEmail = session.user.email;
-          if (!userEmail || !isValidSchoolEmail(userEmail)) {
-            throw new Error('Please use your school email address to sign in.');
-          }
-        }
-
         // Create admin client with service role key
         const adminClient = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -62,18 +44,46 @@ export async function GET(request: Request) {
           }
         });
 
-        // For Azure/Microsoft logins, ensure profile exists with customer role
+        // For Azure/Microsoft logins, validate email and check for school association
         if (isAzureLogin) {
+          const userEmail = session.user.email;
+          if (!userEmail) {
+            throw new Error('Email is required for registration');
+          }
+
+          // Extract domain from email
+          const emailDomain = userEmail.split('@')[1];
+          if (!emailDomain) {
+            throw new Error('Invalid email format');
+          }
+
+          // Look up school by domain
+          const { data: school, error: schoolError } = await adminClient
+            .from('schools')
+            .select('id')
+            .eq('email_domain', emailDomain)
+            .single();
+
+          if (schoolError) {
+            console.error('Error looking up school:', schoolError);
+            if (schoolError.code !== 'PGRST116') { // not_found
+              throw schoolError;
+            }
+          }
+
+          // Create customer profile, associating with school if found
           const { error: profileError } = await adminClient
             .from('profiles')
             .upsert({
               id: session.user.id,
               role: 'customer',
+              school_id: school?.id || null,
               updated_at: new Date().toISOString()
             });
 
           if (profileError) {
             console.error('Error creating/updating profile:', profileError);
+            throw profileError;
           }
         } else {
           // Handle regular admin registration
@@ -96,8 +106,9 @@ export async function GET(request: Request) {
 
     // Redirect based on auth type
     const redirectUrl = session?.user?.app_metadata.provider === 'azure' 
-      ? new URL('/menu', url.origin)  // Microsoft users go straight to menu
+      ? new URL('/menu', url.origin)  // Microsoft users (customers/students) go straight to menu
       : new URL('/register/success', url.origin);  // Regular registration success
+
     return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('Error in auth callback:', error);
