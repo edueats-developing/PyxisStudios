@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import MicrosoftLoginButton from '@/components/MicrosoftLoginButton'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
@@ -155,10 +156,24 @@ export default function Login() {
         <button
           type="button"
           onClick={() => setIsRegistering(!isRegistering)}
-          className="w-full bg-gray-300 text-gray-800 p-2 rounded"
+          className="w-full bg-gray-300 text-gray-800 p-2 rounded mb-4"
         >
           {isRegistering ? 'Switch to Login' : 'Switch to Register'}
         </button>
+
+        {!isRegistering && (
+          <>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or</span>
+              </div>
+            </div>
+            <MicrosoftLoginButton />
+          </>
+        )}
       </form>
     </div>
   )
