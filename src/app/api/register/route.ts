@@ -125,7 +125,7 @@ export async function POST(req: Request) {
       description: `${businessName} on EduEats`,
       admin_id: signUpData.user.id,
       stripe_account_id: accountId,
-      status: 'pending_verification'
+      status: 'pending'
     });
 
     // Create restaurant record
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
           description: `${businessName} on EduEats`,
           admin_id: signUpData.user.id,
           stripe_account_id: accountId,
-          status: 'pending_verification'
+          status: 'pending'
         }
       });
       return NextResponse.json(
