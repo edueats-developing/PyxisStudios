@@ -3,6 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+// Helper function to validate school email domain
+const isValidSchoolEmail = (email: string): boolean => {
+  const allowedDomains = process.env.NEXT_PUBLIC_MICROSOFT_ALLOWED_DOMAINS?.split(',') || [];
+  const emailDomain = email.split('@')[1]?.toLowerCase();
+  
+  if (!emailDomain) {
+    return false;
+  }
+
+  return allowedDomains.some(domain => 
+    emailDomain === domain.toLowerCase().trim()
+  );
+};
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -49,6 +63,11 @@ export async function GET(request: Request) {
           const userEmail = session.user.email;
           if (!userEmail) {
             throw new Error('Email is required for registration');
+          }
+
+          // Validate school email domain
+          if (!isValidSchoolEmail(userEmail)) {
+            throw new Error('Please use your school email address to sign in');
           }
 
           // Extract domain from email
