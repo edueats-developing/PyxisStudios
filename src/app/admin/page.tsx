@@ -8,6 +8,31 @@ import Link from 'next/link'
 import '../globals.css'
 import { useRouter, usePathname } from 'next/navigation'
 import RestaurantInfoPopup from '@/components/RestaurantInfoPopup'
+import StarRating from '@/components/StarRating'
+
+interface DatabaseReview {
+  id: number
+  user_id: string
+  profile_id: string
+  restaurant_id: number | null
+  menu_item_id: number | null
+  rating: number
+  comment: string
+  created_at: string
+  menu_item: {
+    name: string
+    restaurant: {
+      name: string
+    } | null
+  } | null
+  restaurant: {
+    name: string
+  } | null
+  profile: {
+    id: string
+    role: string
+  } | null
+}
 
 interface MenuItem {
   id: number
@@ -58,6 +83,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [reviews, setReviews] = useState<DatabaseReview[]>([])
   const pathname = usePathname()
 
   useEffect(() => {
@@ -68,6 +94,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     if (restaurant) {
       fetchMenuItems()
       fetchOrders()
+      fetchReviews()
     }
   }, [restaurant])
 
@@ -198,6 +225,27 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     }
   }
 
+  async function fetchReviews() {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          menu_item:menu_items(name),
+          profile:profiles!profile_id(role),
+          restaurant:restaurants(name)
+        `)
+        .or(`restaurant_id.eq.${restaurant!.id},and(menu_item.restaurant_id.eq.${restaurant!.id})`)
+        .order('created_at', { ascending: false })
+        .limit(3)
+
+      if (error) throw error
+      setReviews(data || [])
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    }
+  }
+
   async function updateOrderStatus(orderId: number, newStatus: Order['status']) {
     try {
       const { error } = await supabase
@@ -228,106 +276,169 @@ function AdminDashboard({ user }: AdminDashboardProps) {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Only show popup after loading and if restaurant exists */}
-      {!loading && restaurant && (
-        <RestaurantInfoPopup 
-          key={user.id} 
-          restaurant={{
-            id: restaurant.id,
-            name: restaurant.name,
-            address: restaurant.address,
-            phone: restaurant.phone,
-            description: restaurant.description,
-            admin_id: restaurant.admin_id
-          }}
-          onUpdate={async () => {
-            console.log('Restaurant info updated, refreshing data...');
-            await fetchRestaurant();
-            console.log('Restaurant data refreshed:', {
-              id: restaurant.id,
-              name: restaurant.name,
-              address: restaurant.address,
-              phone: restaurant.phone,
-              description: restaurant.description
-            });
-          }}
-        />
-      )}
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard - {restaurant.name}</h1>
-      <p className="mb-4">Welcome, {user.email}</p>
-      
-      <Link href="../menu" className={`AdminDashboard-link ${pathname === '/menu' ? 'AdminDashboard-link-active' : ''}`}>
-        Menu
-      </Link>
-      {notification && (
-        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {notification.message}
-        </div>
-      )}
-      <Link href="/admin/orders" className={`AdminDashboard-link ${pathname === '/orders' ? 'AdminDashboard-link-active' : ''}`}>
-        Orders
-      </Link>
-      {notification && (
-        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {notification.message}
-        </div>
-      )}
-      <Link href="/admin/analytics" className={`AdminDashboard-link ${pathname === '/analytics' ? 'AdminDashboard-link-active' : ''}`}>
-        Analytics
-      </Link>
-      
-      {notification && (
-        <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {notification.message}
-        </div>
-      )}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Add New Menu Item</h2>
-        <form onSubmit={addMenuItem} className="space-y-2">
-          <input
-            type="text"
-            placeholder="Name"
-            value={newItem.name}
-            onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Description"
-            value={newItem.description}
-            onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="number"
-            placeholder="Price"
-            value={newItem.price}
-            onChange={(e) => setNewItem({...newItem, price: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            value={newItem.category}
-            onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)}
-            className="w-full p-2 border rounded"
-          />
-          <button type="submit" className={`AdminDashboard-link  ? 'AdminDashboard-link-active' : ''}`}>Add Item</button>
-        </form>
-      </div>
-</div>
+    <div className="p-8 bg-gray-50">
+          {/* Restaurant Info Popup */}
+          {!loading && restaurant && (
+            <RestaurantInfoPopup 
+              key={user.id} 
+              restaurant={{
+                id: restaurant.id,
+                name: restaurant.name,
+                address: restaurant.address,
+                phone: restaurant.phone,
+                description: restaurant.description,
+                admin_id: restaurant.admin_id
+              }}
+              onUpdate={fetchRestaurant}
+            />
+          )}
 
+          {notification && (
+            <div className={`p-4 mb-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {notification.message}
+            </div>
+          )}
+
+          <h1 className="text-2xl font-bold mb-6">Dashboard Overview - {restaurant?.name}</h1>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-gray-500 text-sm font-medium">Today's Revenue</h3>
+              <p className="text-2xl font-bold mt-2">${orders.reduce((sum, order) => sum + order.total_price, 0).toFixed(2)}</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-gray-500 text-sm font-medium">Total Orders Today</h3>
+              <p className="text-2xl font-bold mt-2">{orders.length}</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-gray-500 text-sm font-medium">Average Order Value</h3>
+              <p className="text-2xl font-bold mt-2">
+                ${orders.length > 0 ? (orders.reduce((sum, order) => sum + order.total_price, 0) / orders.length).toFixed(2) : '0.00'}
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h3 className="text-gray-500 text-sm font-medium">Active Menu Items</h3>
+              <p className="text-2xl font-bold mt-2">{menuItems.length}</p>
+            </div>
+          </div>
+
+          {/* Active Orders and Analytics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Active Orders</h2>
+                <Link href="/admin/orders" className="text-blue-500 hover:text-blue-700 text-sm">
+                  View All
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {orders.slice(0, 3).map((order) => (
+                  <div key={order.id} className="border-b pb-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium">Order #{order.id}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.created_at).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-sm ${
+                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
+                        order.status === 'ready' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Recent Feedback</h2>
+                <Link href="/admin/feedback" className="text-blue-500 hover:text-blue-700 text-sm">
+                  View All
+                </Link>
+              </div>
+              {reviews.length === 0 ? (
+                <p className="text-gray-500">No recent feedback</p>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="border-b pb-4 last:border-b-0">
+                      <div className="flex justify-between items-start">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <StarRating rating={review.rating} />
+                            <span className="text-sm text-gray-500">
+                              {new Date(review.created_at).toLocaleString()}
+                            </span>
+                          </div>
+                          <span className="text-sm text-gray-600 mt-1">
+                            By: {review.profile?.role || 'Anonymous'}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-gray-700 line-clamp-2">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Menu Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Menu Overview</h2>
+                <Link href="/admin/menu-management" className="text-blue-500 hover:text-blue-700 text-sm">
+                  Manage Menu
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {menuItems.slice(0, 5).map((item) => (
+                  <div key={item.id} className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-500">{item.category}</p>
+                    </div>
+                    <p className="font-medium">${parseFloat(item.price).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Quick Actions</h2>
+              </div>
+              <div className="space-y-4">
+                <Link 
+                  href="/admin/menu-management"
+                  className="block w-full text-center bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                >
+                  Add New Menu Item
+                </Link>
+                <Link 
+                  href="/admin/orders"
+                  className="block w-full text-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                >
+                  View All Orders
+                </Link>
+                <Link 
+                  href="/admin/analytics"
+                  className="block w-full text-center bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors"
+                >
+                  View Analytics
+                </Link>
+              </div>
+            </div>
+          </div>
+    </div>
   )
 }
 
