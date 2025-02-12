@@ -159,7 +159,7 @@ export default function Menu() {
         <p className="font-bold">
           Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
         </p>
-        <CheckoutButton user={user} selectedRestaurant={selectedRestaurant} />
+        <CheckoutButton user={user} />
       </div>
     </div>
   )
