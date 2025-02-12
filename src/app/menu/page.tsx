@@ -6,6 +6,8 @@ import { User } from '@supabase/supabase-js'
 import { useCart } from '../../components/CartContext'
 import AddToCartButton from '../../components/AddToCartButton'
 import CheckoutButton from '../../components/CheckoutButton'
+import RestaurantCard from '../../components/RestaurantCard'
+import BackButton from '../../components/BackButton'
 
 interface MenuItem {
   id: string;
@@ -21,6 +23,8 @@ interface Restaurant {
   id: number;
   name: string;
   description: string;
+  average_rating?: number;
+  review_count?: number;
 }
 
 export default function Menu() {
@@ -29,7 +33,8 @@ export default function Menu() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRestaurant, setSelectedRestaurant] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loadingRestaurants, setLoadingRestaurants] = useState(true)
+  const [loadingMenuItems, setLoadingMenuItems] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { items: cart } = useCart()
 
@@ -56,6 +61,7 @@ export default function Menu() {
 
   async function fetchRestaurants() {
     try {
+      setLoadingRestaurants(true)
       const { data, error } = await supabase
         .from('restaurants')
         .select('*')
@@ -63,18 +69,18 @@ export default function Menu() {
       
       if (error) throw error
       setRestaurants(data || [])
-      if (data && data.length > 0) {
-        setSelectedRestaurant(data[0].id)
-      }
+      // No longer auto-selecting the first restaurant
     } catch (error) {
       console.error('Error fetching restaurants:', error)
       setError('Failed to load restaurants')
+    } finally {
+      setLoadingRestaurants(false)
     }
   }
 
   async function fetchMenuItems(restaurantId: number) {
     try {
-      setLoading(true)
+      setLoadingMenuItems(true)
       const { data, error } = await supabase
         .from('menu_items')
         .select('*')
@@ -83,11 +89,12 @@ export default function Menu() {
       
       if (error) throw error
       setMenuItems(data || [])
+      setLoadingMenuItems(false)
     } catch (error) {
       console.error('Error fetching menu items:', error)
       setError('Failed to load menu items')
-    } finally {
-      setLoading(false)
+      setMenuItems([])
+      setLoadingMenuItems(false)
     }
   }
 
@@ -95,13 +102,13 @@ export default function Menu() {
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading) {
+  if (loadingRestaurants) {
     return <div className="flex justify-center items-center min-h-screen">
       <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
     </div>
   }
 
-  if (error) {
+  if (error && !restaurants.length) {
     return <div className="text-center text-red-500">{error}</div>
   }
 
@@ -110,57 +117,63 @@ export default function Menu() {
       <h1 className="text-2xl font-bold mb-4">Menu</h1>
       {user && <p className="mb-4">Welcome, {user.email}</p>}
       
-      <div className="mb-4">
-        <label htmlFor="restaurant-select" className="block mb-2">Select Restaurant:</label>
-        <select
-          id="restaurant-select"
-          value={selectedRestaurant || ''}
-          onChange={(e) => setSelectedRestaurant(Number(e.target.value))}
-          className="w-full p-2 border rounded"
-        >
+      {selectedRestaurant ? (
+        <>
+          <BackButton onClick={() => setSelectedRestaurant(null)} />
+          
+          <input
+            type="text"
+            placeholder="Search menu items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 mb-4 border rounded"
+          />
+
+          {loadingMenuItems ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.map((item) => (
+                <div key={item.id} className="border p-4 rounded shadow-md">
+                  <h3 className="font-bold">{item.name}</h3>
+                  <p>{item.description}</p>
+                  <p className="font-semibold">${item.price.toFixed(2)}</p>
+                  <p>Category: {item.category}</p>
+                  {item.image_url && (
+                    <img src={item.image_url} alt={item.name} className="w-full h-70 object-cover mt-2 rounded" style={{ marginBottom: '1rem' }} />
+                  )}
+                  <AddToCartButton item={item} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-2">Cart</h2>
+            {cart.map((item) => (
+              <div key={item.id} className="mb-2 flex justify-between items-center">
+                <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
+              </div>
+            ))}
+            <p className="font-bold">
+              Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+            </p>
+            <CheckoutButton user={user} />
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {restaurants.map((restaurant) => (
-            <option key={restaurant.id} value={restaurant.id}>
-              {restaurant.name}
-            </option>
+            <RestaurantCard
+              key={restaurant.id}
+              restaurant={restaurant}
+              onClick={() => setSelectedRestaurant(restaurant.id)}
+            />
           ))}
-        </select>
-      </div>
-
-      <input
-        type="text"
-        placeholder="Search menu items..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full p-2 mb-4 border rounded"
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredItems.map((item) => (
-          <div key={item.id} className="border p-4 rounded">
-            <h3 className="font-bold">{item.name}</h3>
-            <p>{item.description}</p>
-            <p className="font-semibold">${item.price.toFixed(2)}</p>
-            <p>Category: {item.category}</p>
-            {item.image_url && (
-              <img src={item.image_url} alt={item.name} className="w-full h-70 object-cover mt-2 rounded" style={{ marginBottom: '1rem' }} />
-            )}
-            <AddToCartButton item={item} />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-2">Cart</h2>
-        {cart.map((item) => (
-          <div key={item.id} className="mb-2 flex justify-between items-center">
-            <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
-          </div>
-        ))}
-        <p className="font-bold">
-          Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-        </p>
-        <CheckoutButton user={user} selectedRestaurant={selectedRestaurant} />
-      </div>
+        </div>
+      )}
     </div>
   )
 }
