@@ -1,5 +1,6 @@
 'use client'
 
+import { Analytics } from '@vercel/analytics/next'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <CartProvider>
+          <Analytics />
           {!isLandingPage && (
             <>
               {/* Horizontal Navbar */}
@@ -140,6 +142,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                     <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
                       Analytics
+                    </Link>
+                    <Link href="/admin/design" className={`sidebar-link ${pathname === '/admin/design' ? 'sidebar-link-active' : ''}`}>
+                      Design
                     </Link>
                     <div className="horizontal-separator"></div>
                     <Link href="/admin/feedback" className={`sidebar-link ${pathname === '/feedback' ? 'sidebar-link-active' : ''}`}>
