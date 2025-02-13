@@ -41,7 +41,7 @@ export default function RestaurantCard({ restaurant, onClick }: RestaurantCardPr
         <div className="flex items-center gap-2 mb-2">
           <StarRating rating={restaurant.average_rating || 0} />
           <span className="text-sm text-gray-500">
-            {restaurant.review_count ? `(${restaurant.review_count} reviews)` : 'No reviews yet'}
+            {`(${restaurant.review_count || 0})`}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm text-gray-500">
