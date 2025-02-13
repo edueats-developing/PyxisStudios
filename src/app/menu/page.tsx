@@ -62,14 +62,39 @@ export default function Menu() {
   async function fetchRestaurants() {
     try {
       setLoadingRestaurants(true)
-      const { data, error } = await supabase
+      
+      // First fetch restaurants
+      const { data: restaurantsData, error: restaurantsError } = await supabase
         .from('restaurants')
         .select('*')
         .order('name', { ascending: true })
       
-      if (error) throw error
-      setRestaurants(data || [])
-      // No longer auto-selecting the first restaurant
+      if (restaurantsError) throw restaurantsError
+
+      // Then fetch all reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('restaurant_id, rating')
+        .not('restaurant_id', 'is', null)
+      
+      if (reviewsError) throw reviewsError
+
+      // Calculate average ratings and review counts
+      const restaurantsWithRatings = restaurantsData?.map(restaurant => {
+        const restaurantReviews = reviewsData?.filter(review => review.restaurant_id === restaurant.id) || []
+        const reviewCount = restaurantReviews.length
+        const averageRating = reviewCount > 0
+          ? restaurantReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+          : 0
+
+        return {
+          ...restaurant,
+          average_rating: averageRating,
+          review_count: reviewCount
+        }
+      }) || []
+
+      setRestaurants(restaurantsWithRatings)
     } catch (error) {
       console.error('Error fetching restaurants:', error)
       setError('Failed to load restaurants')

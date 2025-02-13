@@ -227,20 +227,46 @@ function AdminDashboard({ user }: AdminDashboardProps) {
 
   async function fetchReviews() {
     try {
-      const { data, error } = await supabase
+      // First get direct restaurant reviews
+      const { data: restaurantReviews, error: restaurantError } = await supabase
         .from('reviews')
         .select(`
           *,
-          menu_item:menu_items(name),
-          profile:profiles!profile_id(role),
-          restaurant:restaurants(name)
+          profile:profiles!profile_id(
+            id,
+            role
+          )
         `)
-        .or(`restaurant_id.eq.${restaurant!.id},and(menu_item.restaurant_id.eq.${restaurant!.id})`)
+        .eq('restaurant_id', restaurant!.id)
         .order('created_at', { ascending: false })
-        .limit(3)
 
-      if (error) throw error
-      setReviews(data || [])
+      if (restaurantError) throw restaurantError
+
+      // Then get menu item reviews
+      const { data: menuItemReviews, error: menuError } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          menu_item:menu_items!inner(
+            name,
+            restaurant_id
+          ),
+          profile:profiles!profile_id(
+            id,
+            role
+          )
+        `)
+        .eq('menu_item.restaurant_id', restaurant!.id)
+        .order('created_at', { ascending: false })
+
+      if (menuError) throw menuError
+
+      // Combine and sort all reviews
+      const allReviews = [...(restaurantReviews || []), ...(menuItemReviews || [])]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 3)
+
+      setReviews(allReviews)
     } catch (error) {
       console.error('Error fetching reviews:', error)
     }
