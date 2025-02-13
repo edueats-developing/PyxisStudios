@@ -1,5 +1,6 @@
 'use client'
 
+import { Analytics } from '@vercel/analytics/next'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <CartProvider>
+          <Analytics />
           {!isLandingPage && (
             <>
               {/* Horizontal Navbar */}
