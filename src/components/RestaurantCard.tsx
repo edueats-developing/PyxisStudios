@@ -38,9 +38,9 @@ export default function RestaurantCard({ restaurant, onClick }: RestaurantCardPr
       <div className="p-4">
         <h3 className="text-xl font-semibold mb-2">{restaurant.name}</h3>
         <p className="text-gray-600 text-sm mb-2 line-clamp-2">{restaurant.description}</p>
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center mb-2">
           <StarRating rating={restaurant.average_rating || 0} />
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 ml-1">
             {`(${restaurant.review_count || 0})`}
           </span>
         </div>
