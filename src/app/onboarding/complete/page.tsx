@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function OnboardingCompletePage() {
+function OnboardingCompleteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -36,5 +36,15 @@ export default function OnboardingCompletePage() {
         <p className="mt-2 text-sm text-gray-500">You will be redirected to complete registration.</p>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingCompletePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>}>
+      <OnboardingCompleteContent />
+    </Suspense>
   );
 }

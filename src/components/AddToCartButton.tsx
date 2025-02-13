@@ -6,6 +6,7 @@ interface AddToCartButtonProps {
     id: string;
     name: string;
     price: number;
+    restaurant_id: number;
   };
 }
 

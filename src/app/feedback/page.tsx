@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { User } from '@supabase/supabase-js'
@@ -32,7 +32,7 @@ interface MenuItem {
   restaurant_id: number
 }
 
-export default function Feedback() {
+function FeedbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
@@ -327,5 +327,15 @@ export default function Feedback() {
         {submitting ? 'Submitting...' : 'Submit Feedback'}
       </button>
     </div>
+  )
+}
+
+export default function Feedback() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>}>
+      <FeedbackContent />
+    </Suspense>
   )
 }

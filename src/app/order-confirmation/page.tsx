@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
@@ -34,7 +34,7 @@ interface GroupedOrderItems {
   }
 }
 
-export default function OrderConfirmation() {
+function OrderConfirmationContent() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -152,5 +152,15 @@ export default function OrderConfirmation() {
         )
       })}
     </div>
+  )
+}
+
+export default function OrderConfirmation() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>}>
+      <OrderConfirmationContent />
+    </Suspense>
   )
 }
