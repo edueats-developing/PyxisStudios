@@ -461,6 +461,12 @@ function AdminDashboard({ user }: AdminDashboardProps) {
                 >
                   View Analytics
                 </Link>
+                <Link 
+                  href="/admin/design"
+                  className="block w-full text-center bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition-colors"
+                >
+                  Customize Design
+                </Link>
               </div>
             </div>
           </div>
