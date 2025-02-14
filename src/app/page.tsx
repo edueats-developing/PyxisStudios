@@ -13,7 +13,7 @@ export default function Home() {
           priority
         />
         <h1 className="text-4xl md:text-6xl font-bold mb-4 text-center">Coming Soon</h1>
-        <p className="text-xl md:text-2xl mb-8 text-center">We're cooking up something special for your campus!</p>
+        <p className="text-xl md:text-2xl mb-8 text-center">We're cooking up something special!</p>
       </main>
 
       <footer className="fixed bottom-0 w-full bg-[#008C87] text-white py-4 text-center">
