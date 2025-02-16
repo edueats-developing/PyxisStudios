@@ -140,6 +140,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'sidebar-link-active' : ''}`}>
                       Orders
                     </Link>
+                    <Link href="/admin/staff" className={`sidebar-link ${pathname === '/admin/staff' ? 'sidebar-link-active' : ''}`}>
+                      Staff Management
+                    </Link>
                     <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
                       Analytics
                     </Link>
@@ -147,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       Design
                     </Link>
                     <div className="horizontal-separator"></div>
-                    <Link href="/admin/feedback" className={`sidebar-link ${pathname === '/feedback' ? 'sidebar-link-active' : ''}`}>
+                    <Link href="/admin/feedback" className={`sidebar-link ${pathname === '/admin/feedback' ? 'sidebar-link-active' : ''}`}>
                       Feedback
                     </Link>
                     <Link href="/users" className={`sidebar-link ${pathname === '/users' ? 'sidebar-link-active' : ''}`}>
