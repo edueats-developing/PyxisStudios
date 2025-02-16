@@ -25,11 +25,14 @@ interface Restaurant {
   description: string;
   average_rating?: number;
   review_count?: number;
+  banner_url?: string;
+  profile_url?: string;
 }
 
 export default function RestaurantPage({ params }: { params: { restaurantId: string } }) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [searchInput, setSearchInput] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -117,47 +120,97 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <BackButton onClick={() => router.push('/menu')} />
-      
-      <h1 className="text-2xl font-bold mb-4">{restaurant.name}</h1>
-      <p className="mb-4">{restaurant.description}</p>
-      {user && <p className="mb-4">Welcome, {user.email}</p>}
-      
-      <input
-        type="text"
-        placeholder="Search menu items..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full p-2 mb-4 border rounded"
-      />
+    <div className="min-h-screen bg-white-100">
+      <div className="max-w-6xl mx-auto">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredItems.map((item) => (
-          <div key={item.id} className="border p-4 rounded shadow-md">
-            <h3 className="font-bold">{item.name}</h3>
-            <p>{item.description}</p>
-            <p className="font-semibold">${item.price.toFixed(2)}</p>
-            <p>Category: {item.category}</p>
-            {item.image_url && (
-              <img src={item.image_url} alt={item.name} className="w-full h-70 object-cover mt-2 rounded" style={{ marginBottom: '1rem' }} />
-            )}
-            <AddToCartButton item={item} />
+      {/* Back button Section */}
+      <div className="pt-2 pl-2 mb-2">
+            <BackButton onClick={() => router.push('/menu')} />
           </div>
-        ))}
+
+          {/* Banner and Profile Section */}
+        <div className="relative w-full aspect-[21/5] h-auto rounded-lg">
+          <img
+            src={restaurant.banner_url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/restaurant_banner-image/restaurants/default-banner.jpg`}
+            alt="Restaurant Banner"
+            className="w-full h-full object-cover rounded-lg"
+          />
+          <div className="absolute -bottom-10 left-8">
+            <div className="relative w-[15%] aspect-square min-w-[120px] max-w-[140px] rounded-full border-4 border-white overflow-hidden bg-white">
+              <img
+                src={restaurant.profile_url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/restaurant_profile-image/restaurants/default-profile.jpg`}
+                alt="Restaurant Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-2">Cart</h2>
-        {cart.map((item) => (
-          <div key={item.id} className="mb-2 flex justify-between items-center">
-            <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+        <h1 className="text-2xl font-bold mb-4">{restaurant.name}</h1>
+        <p className="mb-4">{restaurant.description}</p>
+        {user && <p className="mb-4">Welcome, {user.email}</p>}
+      
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          setSearchTerm(searchInput);
+        }} className="mb-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Search menu items..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Search
+            </button>
           </div>
-        ))}
-        <p className="font-bold">
-          Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-        </p>
-        <CheckoutButton user={user} />
+        </form>
+        {searchTerm && (
+          <p className="text-gray-600 mb-4">
+            Showing {filteredItems.length} results for "{searchTerm}"
+          </p>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map((item) => (
+            <div key={item.id} className="border p-4 rounded shadow-md">
+              <h3 className="font-bold">{item.name}</h3>
+              <p>{item.description}</p>
+              <p className="font-semibold">${item.price.toFixed(2)}</p>
+              <p>Category: {item.category}</p>
+              {item.image_url && (
+                <div className="relative w-full h-48 mb-4">
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </div>
+              )}
+              <AddToCartButton item={item} />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-2">Cart</h2>
+          {cart.map((item) => (
+            <div key={item.id} className="mb-2 flex justify-between items-center">
+              <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
+            </div>
+          ))}
+          <p className="font-bold">
+            Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+          </p>
+          <CheckoutButton user={user} />
+        </div>
       </div>
     </div>
   )
