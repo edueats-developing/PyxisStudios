@@ -8,7 +8,18 @@ interface RestaurantInfo {
   address: string | null;
   phone: string | null;
   description: string | null;
+  type: 'restaurant' | 'convenience' | null;
+  categories: string[];
 }
+
+const RESTAURANT_CATEGORIES = [
+  'Japanese', 'Pizza', 'Indian', 'Italian', 'Korean', 
+  'Chinese', 'Thai', 'Greek', 'Halal', 'Coffee'
+];
+
+const CONVENIENCE_CATEGORIES = [
+  'Grocery', 'Convenience', 'Coffee'
+];
 
 interface RestaurantInfoPopupProps {
   restaurant: {
@@ -18,6 +29,8 @@ interface RestaurantInfoPopupProps {
     phone: string | null;
     description: string | null;
     admin_id: string;
+    type: 'restaurant' | 'convenience' | null;
+    categories: string[];
   };
   onUpdate?: () => void;
 }
@@ -30,6 +43,8 @@ interface RestaurantData {
   address: string | null;
   phone: string | null;
   admin_id: string;
+  type: 'restaurant' | 'convenience' | null;
+  categories: string[];
   created_at?: string;
   updated_at?: string;
 }
@@ -42,7 +57,9 @@ export default function RestaurantInfoPopup({
   const [info, setInfo] = useState<RestaurantInfo>({
     address: null,
     phone: null,
-    description: null
+    description: null,
+    type: null,
+    categories: []
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -50,14 +67,16 @@ export default function RestaurantInfoPopup({
 
   useEffect(() => {
     console.log('Initial restaurant data:', initialData);
-    const shouldShow = !initialData.address;
+    const shouldShow = !initialData.address || !initialData.type || !initialData.categories?.length;
     console.log('Should show popup:', shouldShow);
     
     setIsOpen(shouldShow);
     setInfo({
       address: initialData.address,
       phone: initialData.phone,
-      description: initialData.description
+      description: initialData.description,
+      type: initialData.type as 'restaurant' | 'convenience' | null,
+      categories: initialData.categories || []
     });
   }, [initialData]);
 
@@ -87,7 +106,9 @@ export default function RestaurantInfoPopup({
     return {
       address: trimmedAddress,
       phone: trimmedPhone,
-      description: trimmedDescription
+      description: trimmedDescription,
+      type: info.type,
+      categories: info.categories
     };
   };
 
@@ -117,7 +138,9 @@ export default function RestaurantInfoPopup({
         set: {
           address: validatedData.address,
           phone: validatedData.phone,
-          description: validatedData.description
+          description: validatedData.description,
+          type: validatedData.type,
+          categories: validatedData.categories
         }
       });
 
@@ -127,7 +150,9 @@ export default function RestaurantInfoPopup({
         .update({
           address: validatedData.address,
           phone: validatedData.phone,
-          description: validatedData.description
+          description: validatedData.description,
+          type: validatedData.type,
+          categories: validatedData.categories
         })
         .eq('id', initialData.id)
         .eq('admin_id', initialData.admin_id) // Use admin_id from props
@@ -207,11 +232,13 @@ export default function RestaurantInfoPopup({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <h2 className="text-2xl font-bold mb-4">Welcome to Your Restaurant Dashboard!</h2>
-        <p className="mb-4">Please complete your restaurant profile to get started.</p>
+        <p className="mb-4">Please complete your restaurant profile to get started. Fields marked as (Required) must be filled out, while (Recommended) fields help customers find your store more easily.</p>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Restaurant Address</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Restaurant Address <span className="text-red-500">(Required)</span>
+            </label>
             <input
               type="text"
               value={info.address || ''}
@@ -225,7 +252,9 @@ export default function RestaurantInfoPopup({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Phone Number <span className="text-red-500">(Required)</span>
+            </label>
             <input
               type="tel"
               value={info.phone || ''}
@@ -243,7 +272,62 @@ export default function RestaurantInfoPopup({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Restaurant Description</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Store Type <span className="text-blue-500">(Recommended)</span>
+            </label>
+            <select
+              value={info.type || ''}
+              onChange={(e) => {
+                const newType = e.target.value as 'restaurant' | 'convenience' | null;
+                setInfo({ 
+                  ...info, 
+                  type: newType,
+                  categories: [] // Reset categories when type changes
+                });
+              }}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Select a type</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="convenience">Convenience Store</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Categories <span className="text-blue-500">(Recommended)</span>
+            </label>
+            <div className="mt-2 space-y-2">
+              {info.type && (info.type === 'restaurant' ? RESTAURANT_CATEGORIES : CONVENIENCE_CATEGORIES).map((category) => (
+                <label key={category} className="inline-flex items-center mr-4 mb-2">
+                  <input
+                    type="checkbox"
+                    checked={info.categories.includes(category)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setInfo({
+                          ...info,
+                          categories: [...info.categories, category]
+                        });
+                      } else {
+                        setInfo({
+                          ...info,
+                          categories: info.categories.filter(c => c !== category)
+                        });
+                      }
+                    }}
+                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">{category}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Store Description <span className="text-red-500">(Required)</span>
+            </label>
             <textarea
               value={info.description || ''}
               onChange={(e) => setInfo({ ...info, description: e.target.value })}

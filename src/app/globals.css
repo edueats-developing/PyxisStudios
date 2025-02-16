@@ -20,23 +20,43 @@ body {
 }
 /* Styles for hoverable buttons in the admin sidebar */
 .sidebar-link {
-  display: block;
-  text-align: center;
-  padding: 0.5rem 1rem;
-  border-radius: 15px; /* Full-rounded */
+  display: flex;
+  align-items: center;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
   font-weight: normal;
   color: #333;
   background-color: transparent;
-  transition: background-color 0.3s, color 0.3s;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 0.5rem;
 }
 
 .sidebar-link:hover {
-  background-color: #e5e7eb; /* Gray on hover */
+  background-color: #e5e7eb;
   color: #333;
 }
 
 .sidebar-link-active {
-  background-color: #00A7A2; /* Turquoise when active */
+  background-color: #00A7A2;
+  color: white;
+}
+
+.sidebar-link.restaurant-active {
+  background-color: #00A7A2;
+  color: white;
+  width: 100%;
+}
+
+.sidebar-link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.sidebar-link-active svg {
   color: white;
 }
 .horizontal-link {

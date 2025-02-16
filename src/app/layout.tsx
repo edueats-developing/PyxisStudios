@@ -10,7 +10,14 @@ import './globals.css'
 import { CartProvider } from '../components/CartContext'
 import ShoppingCart from '../components/ShoppingCart'
 import Image from 'next/image'
-import { Cog6ToothIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'
+import { 
+  Cog6ToothIcon, 
+  ShoppingCartIcon,
+  BookOpenIcon,
+  BuildingStorefrontIcon,
+  ShoppingBagIcon,
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline'
 
 interface Profile {
   id: string
@@ -127,45 +134,68 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               )}
 
-              {/* Vertical Sidebar for Admin */}
-              {profile?.role === 'admin' && (
-                <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-6">
-                  <div className="space-y-4">
-                    <Link href="/admin" className={`sidebar-link ${pathname === '/admin' ? 'sidebar-link-active' : ''}`}>
-                      Dashboard
-                    </Link>
-                    <Link href="/admin/menu-management" className={`sidebar-link ${pathname === '/admin/menu-management' ? 'sidebar-link-active' : ''}`}>
-                      Menu Management
-                    </Link>
-                    <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'sidebar-link-active' : ''}`}>
-                      Orders
-                    </Link>
-                    <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
-                      Analytics
-                    </Link>
-                    <Link href="/admin/design" className={`sidebar-link ${pathname === '/admin/design' ? 'sidebar-link-active' : ''}`}>
-                      Design
-                    </Link>
-                    <div className="horizontal-separator"></div>
-                    <Link href="/admin/feedback" className={`sidebar-link ${pathname === '/feedback' ? 'sidebar-link-active' : ''}`}>
-                      Feedback
-                    </Link>
-                    <Link href="/users" className={`sidebar-link ${pathname === '/users' ? 'sidebar-link-active' : ''}`}>
-                      Users
-                    </Link>
+              {/* Vertical Sidebar for Admin or Customer */}
+              {(profile?.role === 'admin' || profile?.role === 'customer') && (
+                <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-4">
+                  <div className="space-y-2">
+                    {profile?.role === 'admin' ? (
+                      <>
+                        <Link href="/admin" className={`sidebar-link ${pathname === '/admin' ? 'sidebar-link-active' : ''}`}>
+                          Dashboard
+                        </Link>
+                        <Link href="/admin/menu-management" className={`sidebar-link ${pathname === '/admin/menu-management' ? 'sidebar-link-active' : ''}`}>
+                          Menu Management
+                        </Link>
+                        <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'sidebar-link-active' : ''}`}>
+                          Orders
+                        </Link>
+                        <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
+                          Analytics
+                        </Link>
+                        <Link href="/admin/design" className={`sidebar-link ${pathname === '/admin/design' ? 'sidebar-link-active' : ''}`}>
+                          Design
+                        </Link>
+                        <div className="horizontal-separator"></div>
+                        <Link href="/admin/feedback" className={`sidebar-link ${pathname === '/feedback' ? 'sidebar-link-active' : ''}`}>
+                          Feedback
+                        </Link>
+                        <Link href="/users" className={`sidebar-link ${pathname === '/users' ? 'sidebar-link-active' : ''}`}>
+                          Users
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/menu" className={`sidebar-link ${pathname === '/menu' ? 'sidebar-link-active' : ''}`}>
+                          <BookOpenIcon />
+                          Menu
+                        </Link>
+                        <Link href="/restaurants" className={`sidebar-link ${pathname === '/restaurants' ? 'sidebar-link-active' : ''}`}>
+                          <BuildingStorefrontIcon />
+                          Restaurants
+                        </Link>
+                        <Link href="/convenience" className={`sidebar-link ${pathname === '/convenience' ? 'sidebar-link-active' : ''}`}>
+                          <ShoppingBagIcon />
+                          Convenience
+                        </Link>
+                        <Link href="/browse" className={`sidebar-link ${pathname === '/browse' ? 'sidebar-link-active' : ''}`}>
+                          <MagnifyingGlassIcon />
+                          Browse All
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </aside>
               )}
 
               {/* Separator Line */}
-              {profile?.role === 'admin' && (
+              {(profile?.role === 'admin' || profile?.role === 'customer') && (
                 <div className="border-l border-gray-300 h-full fixed top-16 left-64"></div>
               )}
             </>
           )}
 
           {/* Main Content */}
-          <main className={`${!isLandingPage ? 'mt-16' : ''} ${!isLandingPage && profile?.role === 'admin' ? 'ml-64' : ''}`}>
+          <main className={`${!isLandingPage ? 'mt-16' : ''} ${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''}`}>
             {children}
           </main>
         </CartProvider>
