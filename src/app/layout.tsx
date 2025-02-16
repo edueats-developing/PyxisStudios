@@ -16,7 +16,14 @@ import {
   BookOpenIcon,
   BuildingStorefrontIcon,
   ShoppingBagIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  HomeIcon,
+  Square3Stack3DIcon,
+  ClipboardIcon,
+  ChartBarIcon,
+  PaintBrushIcon,
+  ChatBubbleLeftRightIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline'
 
 interface Profile {
@@ -141,25 +148,32 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {profile?.role === 'admin' ? (
                       <>
                         <Link href="/admin" className={`sidebar-link ${pathname === '/admin' ? 'sidebar-link-active' : ''}`}>
+                          <HomeIcon />
                           Dashboard
                         </Link>
                         <Link href="/admin/menu-management" className={`sidebar-link ${pathname === '/admin/menu-management' ? 'sidebar-link-active' : ''}`}>
+                          <Square3Stack3DIcon />
                           Menu Management
                         </Link>
                         <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'sidebar-link-active' : ''}`}>
+                          <ClipboardIcon />
                           Orders
                         </Link>
                         <Link href="/admin/analytics" className={`sidebar-link ${pathname === '/admin/analytics' ? 'sidebar-link-active' : ''}`}>
+                          <ChartBarIcon />
                           Analytics
                         </Link>
                         <Link href="/admin/design" className={`sidebar-link ${pathname === '/admin/design' ? 'sidebar-link-active' : ''}`}>
+                          <PaintBrushIcon />
                           Design
                         </Link>
                         <div className="horizontal-separator"></div>
                         <Link href="/admin/feedback" className={`sidebar-link ${pathname === '/feedback' ? 'sidebar-link-active' : ''}`}>
+                          <ChatBubbleLeftRightIcon />
                           Feedback
                         </Link>
                         <Link href="/users" className={`sidebar-link ${pathname === '/users' ? 'sidebar-link-active' : ''}`}>
+                          <UsersIcon />
                           Users
                         </Link>
                       </>
