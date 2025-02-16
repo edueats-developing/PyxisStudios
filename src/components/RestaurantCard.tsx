@@ -7,10 +7,12 @@ interface RestaurantCardProps {
   restaurant: {
     id: number;
     name: string;
-    description: string;
+    description: string | null;
     image_url?: string;
     average_rating?: number;
     review_count?: number;
+    type?: 'restaurant' | 'convenience';
+    categories?: string[];
   };
   onClick?: () => void;
 }
@@ -39,7 +41,19 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
       </div>
       <div className="p-4">
         <h3 className="text-xl font-semibold mb-2">{restaurant.name}</h3>
-        <p className="text-gray-600 text-sm mb-2 line-clamp-2">{restaurant.description}</p>
+        <p className="text-gray-600 text-sm mb-2 line-clamp-2">{restaurant.description || 'No description available'}</p>
+        {Array.isArray(restaurant.categories) && restaurant.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {restaurant.categories.map((category, index) => (
+              <span 
+                key={index}
+                className="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="flex items-center mb-2">
           <StarRating rating={restaurant.average_rating || 0} />
           <span className="text-sm text-gray-500 ml-1">

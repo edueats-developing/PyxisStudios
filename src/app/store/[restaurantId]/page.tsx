@@ -136,7 +136,7 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
             className="w-full h-full object-cover rounded-lg"
           />
           <div className="absolute -bottom-10 left-8">
-            <div className="relative w-[15%] aspect-square min-w-[120px] max-w-[140px] rounded-full border-4 border-white overflow-hidden bg-white">
+            <div className="relative w-[15%] aspect-square min-w-[120px] max-w-[140px] rounded-full border-4 border-grey overflow-hidden bg-white">
               <img
                 src={restaurant.profile_url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/restaurant_profile-image/restaurants/default-profile.jpg`}
                 alt="Restaurant Profile"
