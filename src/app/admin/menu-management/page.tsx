@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { withAuth } from '@/components/withAuth'
 import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
+import MenuItemVariantsAddons from '@/components/MenuItemVariantsAddons'
 
 interface MenuItem {
   id: number
@@ -31,6 +32,7 @@ function MenuManagement({ user }: { user: User }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -250,7 +252,13 @@ function MenuManagement({ user }: { user: User }) {
             <p className="text-gray-600 text-sm mb-2">{item.description}</p>
             <p className="text-blue-600 font-semibold">${parseFloat(item.price).toFixed(2)}</p>
             <p className="text-gray-500 text-sm mb-4">Category: {item.category}</p>
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setSelectedItemId(item.id)}
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+              >
+                Manage Options
+              </button>
               <button
                 onClick={() => deleteMenuItem(item.id)}
                 className="text-red-500 hover:text-red-700 transition-colors"
@@ -261,6 +269,13 @@ function MenuManagement({ user }: { user: User }) {
           </div>
         ))}
       </div>
+
+      {selectedItemId && (
+        <MenuItemVariantsAddons
+          menuItemId={selectedItemId}
+          onClose={() => setSelectedItemId(null)}
+        />
+      )}
     </div>
   )
 }

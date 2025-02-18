@@ -9,7 +9,7 @@ interface AddStaffFormProps {
 }
 
 export default function AddStaffForm({ restaurantId, onSuccess }: AddStaffFormProps) {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState<'viewer' | 'admin'>('viewer')
@@ -34,15 +34,16 @@ export default function AddStaffForm({ restaurantId, onSuccess }: AddStaffFormPr
         return
       }
 
+      // Validate email format
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        setError('Please enter a valid email address')
+        return
+      }
+
       // Create new auth user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: `${username}@staff.edueats.com`,
-        password: password,
-        options: {
-          data: {
-            username: username
-          }
-        }
+        email: email,
+        password: password
       })
 
       if (signUpError) throw signUpError
@@ -59,7 +60,7 @@ export default function AddStaffForm({ restaurantId, onSuccess }: AddStaffFormPr
           {
             id: authData.user.id,
             role: 'staff',
-            username: username
+            username: email.split('@')[0] // Use part before @ as username
           }
         ])
 
@@ -80,7 +81,7 @@ export default function AddStaffForm({ restaurantId, onSuccess }: AddStaffFormPr
       if (staffError) throw staffError
 
       setSuccess(true)
-      setUsername('')
+      setEmail('')
       setPassword('')
       setConfirmPassword('')
       setRole('viewer')
@@ -96,14 +97,14 @@ export default function AddStaffForm({ restaurantId, onSuccess }: AddStaffFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
       <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-          Username
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Email
         </label>
         <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           required
         />

@@ -1,6 +1,16 @@
--- Add username column to profiles table
-alter table profiles
-add column username text;
+-- Add username and email columns to profiles table if they don't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                  WHERE table_name = 'profiles' AND column_name = 'username') THEN
+        ALTER TABLE profiles ADD COLUMN username text;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                  WHERE table_name = 'profiles' AND column_name = 'email') THEN
+        ALTER TABLE profiles ADD COLUMN email text;
+    END IF;
+END $$;
 
 -- Create restaurant_staff table
 create table restaurant_staff (

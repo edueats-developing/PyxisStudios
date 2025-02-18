@@ -9,6 +9,7 @@ interface StaffMember {
     id: string
     role: string
     username: string
+    email: string
   }
   role: 'viewer' | 'admin'
   created_at: string
@@ -39,7 +40,8 @@ export default function StaffTable({ restaurantId, onUpdate }: StaffTableProps) 
           profile:profiles!inner (
             id,
             role,
-            username
+            username,
+            email
           )
         `)
         .eq('restaurant_id', restaurantId)
@@ -63,7 +65,8 @@ export default function StaffTable({ restaurantId, onUpdate }: StaffTableProps) 
           profile: {
             id: profile.id,
             role: profile.role,
-            username: profile.username || 'Unknown'
+            username: profile.username || 'Unknown',
+            email: profile.email || 'No email'
           }
         }
       })
@@ -124,7 +127,7 @@ export default function StaffTable({ restaurantId, onUpdate }: StaffTableProps) 
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Username
+              Email
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Role
@@ -141,7 +144,7 @@ export default function StaffTable({ restaurantId, onUpdate }: StaffTableProps) 
           {staff.map((member) => (
             <tr key={member.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{member.profile.username}</div>
+                <div className="text-sm text-gray-900">{member.profile.email}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <select

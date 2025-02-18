@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { useCart } from '../../../components/CartContext'
-import AddToCartButton from '../../../components/AddToCartButton'
+import MenuItemPopup from '../../../components/MenuItemPopup'
 import CheckoutButton from '../../../components/CheckoutButton'
 import BackButton from '../../../components/BackButton'
 import { useRouter } from 'next/navigation'
 
 interface MenuItem {
-  id: string;
+  id: number;
   name: string;
   description: string;
   price: number;
@@ -37,6 +37,7 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
   const { items: cart } = useCart()
   const router = useRouter()
 
@@ -96,7 +97,13 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
         .order('name', { ascending: true })
       
       if (menuError) throw menuError
-      setMenuItems(menuData || [])
+      
+      // Convert string IDs to numbers
+      const menuItemsWithNumberIds = (menuData || []).map(item => ({
+        ...item,
+        id: parseInt(item.id as string)
+      }))
+      setMenuItems(menuItemsWithNumberIds)
     } catch (error) {
       console.error('Error fetching restaurant data:', error)
       setError('Failed to load restaurant data')
@@ -194,7 +201,19 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
                   />
                 </div>
               )}
-              <AddToCartButton item={item} />
+              <button
+                onClick={() => setSelectedItemId(item.id)}
+                className="bg-[#00A7A2] text-white px-4 py-2 rounded hover:bg-[#33B8B4] transition-colors"
+              >
+                Add to Cart
+              </button>
+              {selectedItemId === item.id && (
+                <MenuItemPopup
+                  item={item}
+                  isOpen={true}
+                  onClose={() => setSelectedItemId(null)}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -203,7 +222,16 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
           <h2 className="text-xl font-bold mb-2">Cart</h2>
           {cart.map((item) => (
             <div key={item.id} className="mb-2 flex justify-between items-center">
-              <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
+              <span>
+                {item.name}
+                {item.variant && ` - ${item.variant.name}`}
+                {item.addons && item.addons.length > 0 && (
+                  <span className="text-sm text-gray-600">
+                    {' '}(+ {item.addons.map(addon => addon.name).join(', ')})
+                  </span>
+                )}
+                {' '}- ${item.price.toFixed(2)} x {item.quantity}
+              </span>
             </div>
           ))}
           <p className="font-bold">

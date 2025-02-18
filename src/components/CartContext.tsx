@@ -1,18 +1,28 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface CartItem {
-  id: string;
+  id: number;
   name: string;
   price: number;
   quantity: number;
   restaurant_id: number;
+  variant?: {
+    id: number;
+    name: string;
+    price: number;
+  };
+  addons?: Array<{
+    id: number;
+    name: string;
+    price: number;
+  }>;
 }
 
 interface CartContextType {
   items: CartItem[];
   addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
   total: number;
 }
@@ -42,11 +52,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = (id: number) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (id: number, quantity: number) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
         item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
