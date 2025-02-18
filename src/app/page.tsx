@@ -127,6 +127,7 @@ export default async function Home() {
             <div className="w-full md:w-1/3 mb-6 md:mb-0">
               <h3 className="text-xl font-semibold mb-2">EduEats</h3>
               <p>Delicious meals delivered right to your campus!</p>
+              <p>Australian Dollars (AUD)</p>
             </div>
             <div className="w-full md:w-1/3 mb-6 md:mb-0">
               <h3 className="text-xl font-semibold mb-2">Quick Links</h3>
