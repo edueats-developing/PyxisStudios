@@ -8,31 +8,31 @@ export default function About() {
       <div className="space-y-8">
         <section>
           <p className="text-lg leading-relaxed">
-            Welcome to Edu Eats—a platform designed to bring safe, accessible, and convenient food options directly to students and teachers within schools worldwide. Our mission is to transform lunchtime by connecting local restaurants to school communities, ensuring nutritious, allergy-aware meals are available with just a few clicks.
+            Welcome to Edu Eats—a platform designed to bring safe, accessible, and convenient food options directly to students and teachers at schools within Melbounre. Our mission is to transform lunchtime by connecting local restaurants to school communities, ensuring nutritious, allergy-aware meals are available with just a few clicks.
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">Our Purpose</h2>
           <p className="text-lg leading-relaxed">
-            Edu Eats was born from a desire to enhance school food offerings by creating an app similar to services like DoorDash and UberEats but designed specifically for educational environments. We're here to provide students and teachers with an easy, reliable way to pre-order food for delivery at lunchtime.
+            Edu Eats was born from a desire to enhance school food offerings by creating an app similar to services like DoorDash and UberEats but designed specifically for educational environments with student safety and Duty of Care at the centre. We're here to provide students and teachers with an easy, reliable way to pre-order food for delivery at lunchtime.
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">How It Works</h2>
           <p className="text-lg leading-relaxed">
-            Edu Eats operates as a secure web app accessible only through a school's website link. Users sign in through their school account, ensuring a private and protected experience. Once logged in, students, teachers, and parents can explore a range of approved meal options that meet each school's dietary and allergy guidelines.
+            Edu Eats operates as a secure web app accessible only to users at a registered school. Users sign in using their school account. Once logged in, students, teachers, and parents can explore a range of approved meal options that meet each school's requirements.
           </p>
           <p className="text-lg leading-relaxed mt-4">
             Orders can be placed as early as the day before, with a cutoff at 10 AM on the day of delivery. Meals are then delivered to the school at lunchtime, ready for pickup. With integrated order histories, students' order records are visible to parents and school administrators, providing full transparency and easy meal tracking.
           </p>
         </section>
 
-        <section>
+        <section> 
           <h2 className="text-2xl font-semibold mb-4">Safety and Quality</h2>
           <p className="text-lg leading-relaxed">
-            At Edu Eats, safety is paramount. Every product listed in the app follows strict school dietary rules, and we carefully control for common allergens like nuts and dairy. Additionally, only restaurants open during our designated order window are available, ensuring freshness and timely delivery.
+            At Edu Eats, safety is paramount. Every product listed by our partner restaurants complies with school dietary requirements. Additionally, only restaurants open during our designated order window are available, ensuring freshness and timely delivery.
           </p>
         </section>
 

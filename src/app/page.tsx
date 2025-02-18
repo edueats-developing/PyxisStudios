@@ -139,7 +139,7 @@ export default async function Home() {
             </div>
             <div className="w-full md:w-1/3">
               <h3 className="text-xl font-semibold mb-2">Contact Us</h3>
-              <p>Email: support@edueats.com</p>
+              <p>Email: support@edueats.com.au</p>
               <p>Phone: 0478880903</p>
             </div>
           </div>
