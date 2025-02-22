@@ -6,6 +6,7 @@ import { withAuth } from '@/components/withAuth'
 import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import MenuItemVariantsAddons from '@/components/MenuItemVariantsAddons'
+import EditMenuItemModal from '@/components/EditMenuItemModal'
 
 interface MenuItem {
   id: number
@@ -14,6 +15,7 @@ interface MenuItem {
   price: string
   category: string
   image_url: string | null
+  restaurant_id: number
 }
 
 interface Restaurant {
@@ -28,11 +30,19 @@ interface Restaurant {
 function MenuManagement({ user }: { user: User }) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [newItem, setNewItem] = useState<Omit<MenuItem, 'id'>>({ name: '', description: '', price: '', category: '', image_url: null })
+  const [newItem, setNewItem] = useState<Omit<MenuItem, 'id'>>({ 
+    name: '', 
+    description: '', 
+    price: '', 
+    category: '', 
+    image_url: null,
+    restaurant_id: 0 // This will be set when adding the item
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -105,7 +115,14 @@ function MenuManagement({ user }: { user: User }) {
 
       if (error) throw error
       fetchMenuItems()
-      setNewItem({ name: '', description: '', price: '', category: '', image_url: null })
+      setNewItem({ 
+        name: '', 
+        description: '', 
+        price: '', 
+        category: '', 
+        image_url: null,
+        restaurant_id: restaurant!.id 
+      })
       setImageFile(null)
       setShowAddForm(false)
       setNotification({ message: 'Menu item added successfully', type: 'success' })
@@ -260,6 +277,12 @@ function MenuManagement({ user }: { user: User }) {
                 Manage Options
               </button>
               <button
+                onClick={() => setEditingItem({...item, restaurant_id: restaurant!.id})}
+                className="text-green-500 hover:text-green-700 transition-colors"
+              >
+                Edit
+              </button>
+              <button
                 onClick={() => deleteMenuItem(item.id)}
                 className="text-red-500 hover:text-red-700 transition-colors"
               >
@@ -274,6 +297,14 @@ function MenuManagement({ user }: { user: User }) {
         <MenuItemVariantsAddons
           menuItemId={selectedItemId}
           onClose={() => setSelectedItemId(null)}
+        />
+      )}
+
+      {editingItem && (
+        <EditMenuItemModal
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onUpdate={fetchMenuItems}
         />
       )}
     </div>
