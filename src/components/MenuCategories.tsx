@@ -14,82 +14,101 @@ export default function MenuCategories({
   onSelectCategory,
 }: MenuCategoriesProps) {
   const [currentCategory, setCurrentCategory] = useState(selectedCategory);
-  const [isSticky, setIsSticky] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const isManuallySelecting = useRef(false);
+  const scrollEndTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Observer setup for auto-highlight during scrolling
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-120px 0px -70% 0px',
+      threshold: 0,
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (isManuallySelecting.current) return; // Allow manual clicks to override temporarily
+
+      const visibleEntry = entries.find((entry) => entry.isIntersecting);
+      if (visibleEntry) {
+        const newCategory = visibleEntry.target.id;
+        setCurrentCategory(newCategory);
+        onSelectCategory(newCategory);
+      }
+    }, observerOptions);
+
+    categories.forEach((category) => {
+      const element = document.getElementById(category);
+      if (element) observerRef.current?.observe(element);
+    });
+
+    return () => observerRef.current?.disconnect();
+  }, [categories, onSelectCategory]);
+
+  // Function to detect when scrolling stops and reset observer control
   useEffect(() => {
     const handleScroll = () => {
-      if (menuRef.current) {
-        const rect = menuRef.current.getBoundingClientRect();
-        setIsSticky(rect.top <= 60); // Account for navbar height
-      }
+      if (scrollEndTimeout.current) clearTimeout(scrollEndTimeout.current);
+      scrollEndTimeout.current = setTimeout(() => {
+        isManuallySelecting.current = false;
+        updateCategoryOnScrollEnd();
+      }, 150); // Adjust delay for smooth detection
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    // Set up intersection observer for each category section
-    const options = {
-      root: null,
-      rootMargin: '-120px 0px -70% 0px',
-      threshold: 0
-    };
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setCurrentCategory(entry.target.id);
-          onSelectCategory(entry.target.id);
-        }
-      });
-    }, options);
-
-    // Observe all category sections
-    categories.forEach(category => {
+  const updateCategoryOnScrollEnd = () => {
+    const visibleCategory = categories.find((category) => {
       const element = document.getElementById(category);
-      if (element) {
-        observerRef.current?.observe(element);
-      }
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      return rect.top >= 0 && rect.bottom <= window.innerHeight;
     });
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [categories, onSelectCategory]);
-
-  const scrollToCategory = (category: string) => {
-    const element = document.getElementById(category);
-    if (element) {
-      const offset = 124; // Account for navbar + categories bar height
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    if (visibleCategory) {
+      setCurrentCategory(visibleCategory);
+      onSelectCategory(visibleCategory);
     }
   };
 
+  const scrollToCategory = (category: string) => {
+    isManuallySelecting.current = true;
+    setCurrentCategory(category);
+    onSelectCategory(category);
+
+    if (category === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const element = document.getElementById(category);
+      if (element) {
+        const offset = 124;
+        const offsetPosition = element.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      }
+    }
+
+    // Reset the manual selection flag after the scroll animation is complete
+    if (scrollEndTimeout.current) clearTimeout(scrollEndTimeout.current);
+    scrollEndTimeout.current = setTimeout(() => {
+      isManuallySelecting.current = false;
+      updateCategoryOnScrollEnd();
+    }, 700); // Delay matches scroll animation
+  };
+
   return (
-    <div 
+    <div
       ref={menuRef}
       className="menu-categories w-[90%] bg-white transition-shadow duration-200 sticky top-[3.75rem] z-[15] ml-[50px]"
     >
       <div className="max-w-6xl mx-auto px-4 py-3 z-[10]">
         <nav className="flex flex-wrap gap-2 items-center min-h-[40px] justify-start">
           <button
-            onClick={() => {
-              onSelectCategory('');
-              setCurrentCategory('');
-            }}
+            onClick={() => scrollToCategory('all')}
             className={`px-4 py-2 rounded-full hover:bg-gray-100 transition-colors ${
-              !currentCategory ? 'bg-gray-100 border-2 border-[#00A7A2] text-[#00A7A2]' : 'border border-gray-200'
+              currentCategory === 'all' ? 'bg-gray-100 border-2 border-[#00A7A2] text-[#00A7A2]' : 'border border-gray-200'
             }`}
           >
             All
