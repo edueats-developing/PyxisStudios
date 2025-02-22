@@ -61,6 +61,14 @@ export default function MenuCategories({
   }, []);
 
   const updateCategoryOnScrollEnd = () => {
+    // Check if the user has scrolled to the top of the page
+    if (window.scrollY === 0) {
+      setCurrentCategory('all');
+      onSelectCategory('all');
+      return;
+    }
+
+    // Otherwise, find the visible category
     const visibleCategory = categories.find((category) => {
       const element = document.getElementById(category);
       if (!element) return false;
