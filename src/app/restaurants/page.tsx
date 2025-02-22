@@ -40,6 +40,7 @@ export default function RestaurantsPage() {
         .eq('type', 'restaurant');
 
       if (selectedCategories.length > 0) {
+        // Use overlaps to get restaurants matching ANY of the selected categories
         query = query.overlaps('categories', selectedCategories);
       }
 
@@ -47,7 +48,26 @@ export default function RestaurantsPage() {
 
       if (error) throw error;
 
-      setRestaurants(data || []);
+      // Sort restaurants by how many selected categories they match
+      const sortedData = (data || []).sort((a, b) => {
+        if (!selectedCategories.length) return 0;
+        
+        // Count matching categories for each restaurant
+        const aMatches = (a.categories || []).filter(cat => 
+          selectedCategories.includes(cat)
+        ).length;
+        const bMatches = (b.categories || []).filter(cat => 
+          selectedCategories.includes(cat)
+        ).length;
+
+        // Sort by number of matches (descending) then by name (ascending)
+        if (aMatches !== bMatches) {
+          return bMatches - aMatches;
+        }
+        return (a.name || '').localeCompare(b.name || '');
+      });
+
+      setRestaurants(sortedData);
     } catch (err: any) {
       setError(err.message);
     } finally {
