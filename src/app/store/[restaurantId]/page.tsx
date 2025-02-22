@@ -138,7 +138,7 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
           </div>
 
           {/* Banner and Profile Section */}
-        <div className="relative w-full aspect-[21/5] h-auto rounded-lg">
+        <div className="relative w-full aspect-[21/3] h-auto rounded-lg">
           <img
             src={restaurant.banner_url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/restaurant_banner-image/restaurants/default-banner.jpg`}
             alt="Restaurant Banner"
