@@ -67,10 +67,23 @@ export default function RestaurantInfoPopup({
 
   useEffect(() => {
     console.log('Initial restaurant data:', initialData);
-    const shouldShow = !initialData.address || !initialData.type || !initialData.categories?.length;
+    const hasRequiredFields = initialData.address && initialData.phone;
+    const hasOptionalFields = initialData.type && initialData.categories?.length;
+    const isComplete = hasRequiredFields && hasOptionalFields;
+    
+    // Only show popup if required fields are missing
+    const shouldShow = !hasRequiredFields;
     console.log('Should show popup:', shouldShow);
     
-    setIsOpen(shouldShow);
+    // If all fields are complete, clear the force close flag
+    if (isComplete) {
+      localStorage.removeItem(`restaurantPopupClosed_${initialData.id}`);
+    }
+    
+    // Check if popup was manually closed
+    const wasClosed = localStorage.getItem(`restaurantPopupClosed_${initialData.id}`);
+    
+    setIsOpen(shouldShow && !wasClosed);
     setInfo({
       address: initialData.address,
       phone: initialData.phone,
@@ -230,7 +243,18 @@ export default function RestaurantInfoPopup({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+        <button
+          onClick={() => {
+            localStorage.setItem(`restaurantPopupClosed_${initialData.id}`, 'true');
+            setIsOpen(false);
+          }}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+        >
+          <svg className="h-6 w-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
         <h2 className="text-2xl font-bold mb-4">Welcome to Your Restaurant Dashboard!</h2>
         <p className="mb-4">Please complete your restaurant profile to get started. Fields marked as (Required) must be filled out, while (Recommended) fields help customers find your store more easily.</p>
         

@@ -35,8 +35,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [showCart, setShowCart] = useState(false)
+  const [actionCount, setActionCount] = useState(0)
   const router = useRouter()
   const pathname = usePathname()
+
+  const fetchRestaurantData = async (userId: string) => {
+    const { data: restaurant } = await supabase
+      .from('restaurants')
+      .select('*')
+      .eq('admin_id', userId)
+      .single()
+    
+    if (restaurant) {
+      let count = 0
+      if (!restaurant.address) count++
+      if (!restaurant.phone) count++
+      if (!restaurant.type) count++
+      if (!restaurant.categories?.length) count++
+      setActionCount(count)
+    }
+  }
 
   useEffect(() => {
     const fetchUserAndProfile = async () => {
@@ -51,6 +69,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .single()
         if (!error) {
           setProfile(profile)
+          if (profile.role === 'admin') {
+            fetchRestaurantData(user.id)
+          }
         }
       }
     }
@@ -120,9 +141,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         )}
                         <Link 
                           href="/settings" 
-                          className={`horizontal-link flex items-center p-2 ${pathname === '/settings' ? 'horizontal-link-active' : ''}`}
+                          className={`horizontal-link flex items-center p-2 relative ${pathname === '/settings' ? 'horizontal-link-active' : ''}`}
                         >
-                          <Cog6ToothIcon className="h-6 w-6" />
+                          <Cog6ToothIcon className="h-6 w-6 ml-2" />
+                          {profile?.role === 'admin' && actionCount > 0 && (
+                            <span className="absolute -top-0 -right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                              {actionCount}
+                            </span>
+                          )}
                         </Link>
                       </>
                     ) : (
