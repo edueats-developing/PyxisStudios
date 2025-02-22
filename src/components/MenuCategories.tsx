@@ -79,9 +79,9 @@ export default function MenuCategories({
   return (
     <div 
       ref={menuRef}
-      className="menu-categories w-[90%] bg-white transition-shadow duration-200 sticky top-[3.75rem] z-[45] ml-[50px]"
+      className="menu-categories w-[90%] bg-white transition-shadow duration-200 sticky top-[3.75rem] z-[15] ml-[50px]"
     >
-      <div className="max-w-6xl mx-auto px-4 py-3">
+      <div className="max-w-6xl mx-auto px-4 py-3 z-[10]">
         <nav className="flex flex-wrap gap-2 items-center min-h-[40px] justify-start">
           <button
             onClick={() => {

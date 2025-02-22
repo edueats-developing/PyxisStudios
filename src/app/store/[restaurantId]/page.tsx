@@ -221,7 +221,7 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {Array.from(new Set(menuItems.map(item => item.category))).map(category => (
             <div id={category} key={category} className="mb-8">
-              <h2 className="text-xl font-bold sticky top-[124px] bg-white py-4 z-[40] border-b mb-4 -mt-4">
+              <h2 className="text-xl font-bold sticky top-[110px] bg-white py-4 z-[10] border-b mb-4 -mt-4">
                 {category}
               </h2>
               <div className="grid grid-cols-2 gap-4">
