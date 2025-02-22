@@ -23,7 +23,8 @@ import {
   ChartBarIcon,
   PaintBrushIcon,
   ChatBubbleLeftRightIcon,
-  UsersIcon
+  UsersIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 
 interface Profile {
@@ -141,13 +142,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         )}
                         <Link 
                           href="/settings" 
-                          className={`horizontal-link flex items-center p-2 relative ${pathname === '/settings' ? 'horizontal-link-active' : ''}`}
+                          className={`horizontal-link flex items-center justify-center p-2 relative ${pathname === '/settings' ? 'horizontal-link-active' : ''}`}
                         >
-                          <Cog6ToothIcon className="h-6 w-6 ml-2" />
-                          {profile?.role === 'admin' && actionCount > 0 && (
-                            <span className="absolute -top-0 -right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                              {actionCount}
-                            </span>
+                          {profile?.role === 'admin' ? (
+                            <>
+                              <Cog6ToothIcon className="h-6 w-6" />
+                              {actionCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                                  {actionCount}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <UserIcon className="h-6 w-6" />
                           )}
                         </Link>
                       </>
