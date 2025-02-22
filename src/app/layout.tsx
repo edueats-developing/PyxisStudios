@@ -108,7 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {!isLandingPage && (
             <>
               {/* Horizontal Navbar */}
-              <nav className="bg-[#00A7A2] p-3 text-white fixed top-0 w-full z-10">
+              <nav className="bg-[#00A7A2] bg-opacity-90 backdrop-filter backdrop-blur-lg p-3 text-white sticky top-0 w-full z-50">
                 <div className="container mx-auto flex justify-between items-center">
                   <div className="flex items-center">
                     <Image
@@ -162,14 +162,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Shopping Cart */}
               {showCart && (
-                <div className="fixed top-16 right-0 w-96 h-screen bg-white shadow-lg z-20 overflow-y-auto">
+                <div className="fixed top-[3.75rem] right-0 w-96 h-[calc(100vh-3.75rem)] bg-white shadow-lg z-20 overflow-y-auto">
                   <ShoppingCart />
                 </div>
               )}
 
               {/* Vertical Sidebar for Admin or Customer */}
               {(profile?.role === 'admin' || profile?.role === 'customer') && (
-                <aside className="bg-white h-screen fixed top-16 left-0 w-64 p-4">
+                <aside className="bg-white h-[calc(100vh-3.75rem)] fixed top-[3.75rem] left-0 w-64 p-4">
                   <div className="space-y-2">
                     {profile?.role === 'admin' ? (
                       <>
@@ -229,13 +229,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Separator Line */}
               {(profile?.role === 'admin' || profile?.role === 'customer') && (
-                <div className="border-l border-gray-300 h-full fixed top-16 left-64"></div>
+                <div className="border-l border-gray-300 h-[calc(100vh-3.75rem)] fixed top-[3.75rem] left-64"></div>
               )}
             </>
           )}
 
           {/* Main Content */}
-          <main className={`${!isLandingPage ? 'mt-16' : ''} ${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''}`}>
+          <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} pt-4`}>
             {children}
           </main>
         </CartProvider>

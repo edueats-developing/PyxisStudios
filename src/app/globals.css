@@ -14,9 +14,15 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-rgb));
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 /* Styles for hoverable buttons in the admin sidebar */
 .sidebar-link {
