@@ -51,6 +51,7 @@ export default function BrowsePage() {
 
   const fetchStores = async () => {
     try {
+      // First fetch stores
       let query = supabase.from('restaurants').select('*');
 
       if (selectedType) {
@@ -61,11 +62,35 @@ export default function BrowsePage() {
         query = query.overlaps('categories', selectedCategories);
       }
 
-      const { data, error } = await query;
+      const { data: storesData, error: storesError } = await query;
+      if (storesError) throw storesError;
 
-      if (error) throw error;
+      // Then fetch all reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('restaurant_id, rating')
+        .not('restaurant_id', 'is', null);
+      
+      if (reviewsError) throw reviewsError;
 
-      setStores(data || []);
+      // Calculate ratings in the frontend
+      const storesWithRatings = storesData?.map(store => {
+        const storeReviews = reviewsData?.filter(review => 
+          review.restaurant_id === store.id
+        ) || [];
+        const reviewCount = storeReviews.length;
+        const averageRating = reviewCount > 0
+          ? storeReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+          : 0;
+
+        return {
+          ...store,
+          average_rating: averageRating,
+          review_count: reviewCount
+        };
+      }) || [];
+
+      setStores(storesWithRatings);
     } catch (err: any) {
       setError(err.message);
     } finally {
