@@ -109,7 +109,7 @@ export default function MenuCategories({
   return (
     <div
       ref={menuRef}
-      className="menu-categories w-[95%] bg-white transition-shadow duration-200 sticky top-[3.75rem] z-[15] ml-[32px]"
+      className="menu-categories w-[95%] bg-white transition-shadow duration-200 sticky top-[3.75rem] z-[15] ml-[65px]"
     >
       <div className="max-w-7xl mx-auto px-4 py-3 z-[10]">
         <nav className="flex flex-wrap gap-2 items-center min-h-[40px] justify-start">
