@@ -34,6 +34,7 @@ export default function RestaurantsPage() {
 
   const fetchRestaurants = async () => {
     try {
+      // Fetch restaurants
       let query = supabase
         .from('restaurants')
         .select('*')
@@ -44,19 +45,43 @@ export default function RestaurantsPage() {
         query = query.overlaps('categories', selectedCategories);
       }
 
-      const { data, error } = await query;
+      const { data: restaurantsData, error: restaurantsError } = await query;
+      if (restaurantsError) throw restaurantsError;
 
-      if (error) throw error;
+      // Fetch all reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('restaurant_id, rating')
+        .not('restaurant_id', 'is', null);
+      
+      if (reviewsError) throw reviewsError;
+
+      // Calculate ratings in the frontend
+      const restaurantsWithRatings = restaurantsData?.map(restaurant => {
+        const restaurantReviews = reviewsData?.filter(review => 
+          review.restaurant_id === restaurant.id
+        ) || [];
+        const reviewCount = restaurantReviews.length;
+        const averageRating = reviewCount > 0
+          ? restaurantReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+          : 0;
+
+        return {
+          ...restaurant,
+          average_rating: averageRating,
+          review_count: reviewCount
+        };
+      }) || [];
 
       // Sort restaurants by how many selected categories they match
-      const sortedData = (data || []).sort((a, b) => {
+      const sortedData = restaurantsWithRatings.sort((a, b) => {
         if (!selectedCategories.length) return 0;
         
         // Count matching categories for each restaurant
-        const aMatches = (a.categories || []).filter(cat => 
+        const aMatches = (a.categories || []).filter((cat: string) => 
           selectedCategories.includes(cat)
         ).length;
-        const bMatches = (b.categories || []).filter(cat => 
+        const bMatches = (b.categories || []).filter((cat: string) => 
           selectedCategories.includes(cat)
         ).length;
 
