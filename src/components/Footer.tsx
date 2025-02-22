@@ -3,7 +3,7 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <div className="border-t border-gray-200 mt-auto w-full">
-      <div className="px-4 py-6">
+      <div className="px-4 py-8">
         <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
           <Link 
             href="/onboarding"
