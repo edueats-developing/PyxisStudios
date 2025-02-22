@@ -10,6 +10,7 @@ import BackButton from '../../../components/BackButton'
 import MenuCategories from '../../../components/MenuCategories'
 import MenuItemCard from '../../../components/MenuItemCard'
 import { useRouter } from 'next/navigation'
+import StarRating from '../../../components/StarRating'
 
 interface MenuItem {
   id: number;
@@ -36,6 +37,7 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [searchInput, setSearchInput] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -131,13 +133,12 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   return (
     <div className="min-h-screen bg-white-100">
       <div className="max-w-6xl mx-auto">
+        {/* Back button Section */}
+        <div className="pt-2 pl-2 mb-2">
+          <BackButton onClick={() => router.push('/menu')} />
+        </div>
 
-      {/* Back button Section */}
-      <div className="pt-2 pl-2 mb-2">
-            <BackButton onClick={() => router.push('/menu')} />
-          </div>
-
-          {/* Banner and Profile Section */}
+        {/* Banner and Profile Section */}
         <div className="relative w-full aspect-[21/3] h-auto rounded-lg">
           <img
             src={restaurant.banner_url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/restaurant_banner-image/restaurants/default-banner.jpg`}
@@ -158,31 +159,50 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
 
       <div className="mt-20">
         {/* Restaurant Info and Search Bar */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-          <h1 className="text-2xl font-bold mb-2">{restaurant.name}</h1>
-          <p className="mb-4 text-gray-600">{restaurant.description}</p>
-          {user && <p className="mb-4 text-sm text-gray-500">Welcome, {user.email}</p>}
-        
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            setSearchTerm(searchInput);
-          }} className="mb-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Search menu items..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#00A7A2] text-white rounded-lg hover:bg-[#33B8B4]"
-              >
-                Search
-              </button>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">{restaurant.name}</h1>
+              <p className="text-gray-600">{restaurant.description}</p>
+              {(restaurant.review_count || 0) > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <StarRating rating={restaurant.average_rating || 0} />
+                  <span className="text-sm text-gray-600">
+                    ({restaurant.review_count} reviews)
+                  </span>
+                </div>
+              )}
+              {user && <p className="mt-2 text-sm text-gray-500">Welcome, {user.email}</p>}
             </div>
-          </form>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              setSearchTerm(searchInput);
+            }} className="w-1/3 min-w-[250px]">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search menu items..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="w-full p-2 pl-10 border rounded-lg"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </form>
+          </div>
           {searchTerm && (
             <p className="text-gray-600 mb-4">
               Showing {filteredItems.length} results for "{searchTerm}"
@@ -190,48 +210,43 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
           )}
         </div>
 
-        {/* Menu Layout */}
-        <div className="flex max-w-6xl mx-auto">
-          {/* Left Sidebar - Categories */}
-          <div className="w-64 flex-shrink-0">
-            <MenuCategories
-              categories={Array.from(new Set(menuItems.map(item => item.category)))}
-              selectedCategory={searchTerm}
-              onSelectCategory={setSearchTerm}
-            />
-          </div>
+        {/* Menu Categories */}
+        <MenuCategories
+          categories={Array.from(new Set(menuItems.map(item => item.category)))}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
 
-          {/* Main Content - Menu Items */}
-          <div className="flex-1 px-8">
-            {Array.from(new Set(menuItems.map(item => item.category))).map(category => (
-              <div id={category} key={category} className="mb-8">
-                <h2 className="text-xl font-bold sticky top-0 bg-white py-4 z-10 border-b mb-4">
-                  {category}
-                </h2>
-                <div className="space-y-4">
-                  {menuItems
-                    .filter(item => item.category === category)
-                    .filter(item => 
-                      searchTerm ? item.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
-                    )
-                    .map(item => (
-                      <MenuItemCard
-                        key={item.id}
-                        item={item}
-                        onAddToCart={() => setSelectedItemId(item.id)}
-                      />
-                    ))}
-                </div>
+        {/* Menu Layout */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {Array.from(new Set(menuItems.map(item => item.category))).map(category => (
+            <div id={category} key={category} className="mb-8">
+              <h2 className="text-xl font-bold sticky top-[124px] bg-white py-4 z-[40] border-b mb-4 -mt-4">
+                {category}
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {menuItems
+                  .filter(item => 
+                    item.category === category &&
+                    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map(item => (
+                    <MenuItemCard
+                      key={item.id}
+                      item={item}
+                      onAddToCart={() => setSelectedItemId(item.id)}
+                    />
+                  ))}
               </div>
-            ))}
-            {selectedItemId && (
-              <MenuItemPopup
-                item={menuItems.find(item => item.id === selectedItemId)!}
-                isOpen={true}
-                onClose={() => setSelectedItemId(null)}
-              />
-            )}
-          </div>
+            </div>
+          ))}
+          {selectedItemId && (
+            <MenuItemPopup
+              item={menuItems.find(item => item.id === selectedItemId)!}
+              isOpen={true}
+              onClose={() => setSelectedItemId(null)}
+            />
+          )}
         </div>
 
         {/* Cart Section */}

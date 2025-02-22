@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface MenuCategoriesProps {
   categories: string[];
@@ -13,23 +13,59 @@ export default function MenuCategories({
   selectedCategory,
   onSelectCategory,
 }: MenuCategoriesProps) {
+  const [currentCategory, setCurrentCategory] = useState(selectedCategory);
   const [isSticky, setIsSticky] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      const offset = window.scrollY;
-      setIsSticky(offset > 200); // Adjust this value based on your header height
+      if (menuRef.current) {
+        const rect = menuRef.current.getBoundingClientRect();
+        setIsSticky(rect.top <= 60); // Account for navbar height
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Set up intersection observer for each category section
+    const options = {
+      root: null,
+      rootMargin: '-120px 0px -70% 0px',
+      threshold: 0
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setCurrentCategory(entry.target.id);
+          onSelectCategory(entry.target.id);
+        }
+      });
+    }, options);
+
+    // Observe all category sections
+    categories.forEach(category => {
+      const element = document.getElementById(category);
+      if (element) {
+        observerRef.current?.observe(element);
+      }
+    });
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [categories, onSelectCategory]);
+
   const scrollToCategory = (category: string) => {
-    onSelectCategory(category);
     const element = document.getElementById(category);
     if (element) {
-      const offset = 80; // Adjust this value to account for any fixed headers
+      const offset = 124; // Account for navbar + categories bar height
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -41,21 +77,36 @@ export default function MenuCategories({
   };
 
   return (
-    <div className={`bg-white w-64 h-screen overflow-y-auto py-4 ${isSticky ? 'shadow-lg' : ''}`}>
-      <h2 className="text-xl font-bold px-4 mb-4">Menu Categories</h2>
-      <nav>
-        {categories.map((category) => (
+    <div 
+      ref={menuRef}
+      className="menu-categories w-full bg-white transition-shadow duration-200 sticky top-[3.75rem] z-[45] shadow-lg"
+    >
+      <div className="max-w-6xl mx-auto px-4 py-3">
+        <nav className="flex flex-wrap gap-2 items-center min-h-[40px] justify-start">
           <button
-            key={category}
-            onClick={() => scrollToCategory(category)}
-            className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors ${
-              selectedCategory === category ? 'bg-gray-100 border-l-4 border-[#00A7A2]' : ''
+            onClick={() => {
+              onSelectCategory('');
+              setCurrentCategory('');
+            }}
+            className={`px-4 py-2 rounded-full hover:bg-gray-100 transition-colors ${
+              !currentCategory ? 'bg-gray-100 border-2 border-[#00A7A2] text-[#00A7A2]' : 'border border-gray-200'
             }`}
           >
-            {category}
+            All
           </button>
-        ))}
-      </nav>
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => scrollToCategory(category)}
+              className={`px-4 py-2 rounded-full hover:bg-gray-100 transition-colors ${
+                currentCategory === category ? 'bg-gray-100 border-2 border-[#00A7A2] text-[#00A7A2]' : 'border border-gray-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }

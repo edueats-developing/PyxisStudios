@@ -16,8 +16,8 @@ interface MenuItemCardProps {
 
 export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
   return (
-    <div className="flex gap-4 border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white mb-4">
-      <div className="flex-1">
+    <div className="flex gap-4 border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
+      <div className="flex-1 min-w-0">
         <h3 className="font-bold text-lg mb-1">{item.name}</h3>
         <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.description}</p>
         <p className="font-semibold text-[#00A7A2]">${item.price.toFixed(2)}</p>
