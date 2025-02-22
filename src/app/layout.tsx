@@ -9,6 +9,7 @@ import { User } from '@supabase/supabase-js'
 import './globals.css'
 import { CartProvider } from '../components/CartContext'
 import ShoppingCart from '../components/ShoppingCart'
+import Footer from '../components/Footer'
 import Image from 'next/image'
 import { 
   Cog6ToothIcon, 
@@ -242,9 +243,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           )}
 
           {/* Main Content */}
-          <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} pt-4`}>
-            {children}
-          </main>
+          <div className="min-h-screen flex flex-col">
+            <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} pt-4 flex-grow`}>
+              {children}
+            </main>
+            {!isLandingPage && <Footer />}
+          </div>
         </CartProvider>
       </body>
     </html>
