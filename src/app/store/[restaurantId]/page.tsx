@@ -7,6 +7,8 @@ import { useCart } from '../../../components/CartContext'
 import MenuItemPopup from '../../../components/MenuItemPopup'
 import CheckoutButton from '../../../components/CheckoutButton'
 import BackButton from '../../../components/BackButton'
+import MenuCategories from '../../../components/MenuCategories'
+import MenuItemCard from '../../../components/MenuItemCard'
 import { useRouter } from 'next/navigation'
 
 interface MenuItem {
@@ -154,71 +156,86 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-        <h1 className="text-2xl font-bold mb-4">{restaurant.name}</h1>
-        <p className="mb-4">{restaurant.description}</p>
-        {user && <p className="mb-4">Welcome, {user.email}</p>}
-      
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          setSearchTerm(searchInput);
-        }} className="mb-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Search menu items..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full p-2 border rounded-lg"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            >
-              Search
-            </button>
-          </div>
-        </form>
-        {searchTerm && (
-          <p className="text-gray-600 mb-4">
-            Showing {filteredItems.length} results for "{searchTerm}"
-          </p>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredItems.map((item) => (
-            <div key={item.id} className="border p-4 rounded shadow-md">
-              <h3 className="font-bold">{item.name}</h3>
-              <p>{item.description}</p>
-              <p className="font-semibold">${item.price.toFixed(2)}</p>
-              <p>Category: {item.category}</p>
-              {item.image_url && (
-                <div className="relative w-full h-48 mb-4">
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                </div>
-              )}
+      <div className="mt-20">
+        {/* Restaurant Info and Search Bar */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <h1 className="text-2xl font-bold mb-2">{restaurant.name}</h1>
+          <p className="mb-4 text-gray-600">{restaurant.description}</p>
+          {user && <p className="mb-4 text-sm text-gray-500">Welcome, {user.email}</p>}
+        
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            setSearchTerm(searchInput);
+          }} className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Search menu items..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full p-2 border rounded-lg"
+              />
               <button
-                onClick={() => setSelectedItemId(item.id)}
-                className="bg-[#00A7A2] text-white px-4 py-2 rounded hover:bg-[#33B8B4] transition-colors"
+                type="submit"
+                className="px-4 py-2 bg-[#00A7A2] text-white rounded-lg hover:bg-[#33B8B4]"
               >
-                Add to Cart
+                Search
               </button>
-              {selectedItemId === item.id && (
-                <MenuItemPopup
-                  item={item}
-                  isOpen={true}
-                  onClose={() => setSelectedItemId(null)}
-                />
-              )}
             </div>
-          ))}
+          </form>
+          {searchTerm && (
+            <p className="text-gray-600 mb-4">
+              Showing {filteredItems.length} results for "{searchTerm}"
+            </p>
+          )}
         </div>
 
-        <div className="mt-8">
+        {/* Menu Layout */}
+        <div className="flex max-w-6xl mx-auto">
+          {/* Left Sidebar - Categories */}
+          <div className="w-64 flex-shrink-0">
+            <MenuCategories
+              categories={Array.from(new Set(menuItems.map(item => item.category)))}
+              selectedCategory={searchTerm}
+              onSelectCategory={setSearchTerm}
+            />
+          </div>
+
+          {/* Main Content - Menu Items */}
+          <div className="flex-1 px-8">
+            {Array.from(new Set(menuItems.map(item => item.category))).map(category => (
+              <div id={category} key={category} className="mb-8">
+                <h2 className="text-xl font-bold sticky top-0 bg-white py-4 z-10 border-b mb-4">
+                  {category}
+                </h2>
+                <div className="space-y-4">
+                  {menuItems
+                    .filter(item => item.category === category)
+                    .filter(item => 
+                      searchTerm ? item.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
+                    )
+                    .map(item => (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onAddToCart={() => setSelectedItemId(item.id)}
+                      />
+                    ))}
+                </div>
+              </div>
+            ))}
+            {selectedItemId && (
+              <MenuItemPopup
+                item={menuItems.find(item => item.id === selectedItemId)!}
+                isOpen={true}
+                onClose={() => setSelectedItemId(null)}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Cart Section */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-8">
           <h2 className="text-xl font-bold mb-2">Cart</h2>
           {cart.map((item) => (
             <div key={item.id} className="mb-2 flex justify-between items-center">
