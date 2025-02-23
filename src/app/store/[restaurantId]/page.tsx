@@ -20,6 +20,12 @@ interface MenuItem {
   category: string;
   image_url: string | null;
   restaurant_id: number;
+  featured?: boolean;
+  average_rating?: number;
+  review_count?: number;
+  menu_item_reviews?: Array<{
+    rating: number;
+  }>;
 }
 
 interface Restaurant {
@@ -42,6 +48,9 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
+  const [featuredItems, setFeaturedItems] = useState<MenuItem[]>([])
+  const [mostLikedItems, setMostLikedItems] = useState<MenuItem[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
   const { items: cart } = useCart()
   const router = useRouter()
 
@@ -74,17 +83,17 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
       if (restaurantError) throw restaurantError
       
       // Fetch reviews for the restaurant
-      const { data: reviewsData, error: reviewsError } = await supabase
+      const { data: restaurantReviews, error: restaurantReviewsError } = await supabase
         .from('reviews')
         .select('rating')
         .eq('restaurant_id', params.restaurantId)
       
-      if (reviewsError) throw reviewsError
+      if (restaurantReviewsError) throw restaurantReviewsError
 
       // Calculate average rating and review count
-      const reviewCount = reviewsData?.length || 0
+      const reviewCount = restaurantReviews?.length || 0
       const averageRating = reviewCount > 0
-        ? reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+        ? restaurantReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
         : 0
 
       setRestaurant({
@@ -93,21 +102,67 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
         review_count: reviewCount
       })
 
-      // Fetch menu items
+      // Fetch menu items with reviews
       const { data: menuData, error: menuError } = await supabase
         .from('menu_items')
-        .select('*')
+        .select(`
+          *,
+          reviews!menu_item_id (
+            *,
+            profile:profiles!profile_id (
+              id,
+              role
+            )
+          )
+        `)
         .eq('restaurant_id', params.restaurantId)
-        .order('name', { ascending: true })
+        .order('name', { ascending: true });
       
-      if (menuError) throw menuError
+      if (menuError) throw menuError;
+
+      // Process menu items with ratings
+      const processedMenuItems = (menuData || []).map(item => {
+        const itemReviews = item.reviews || [];
+        const ratings = itemReviews.map((r: any) => r.rating);
+        const averageRating = ratings.length > 0 
+          ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length 
+          : 0;
+
+        return {
+          ...item,
+          id: parseInt(item.id as string),
+          average_rating: averageRating,
+          review_count: ratings.length,
+          reviews: itemReviews
+        };
+      });
+
+      // Set all menu items
+      setMenuItems(processedMenuItems);
+
+      // Set featured items
+      setFeaturedItems(processedMenuItems.filter(item => item.featured));
+
+      // Set most liked items (top 5 by rating with at least one review)
+      setMostLikedItems(
+        [...processedMenuItems]
+          .filter(item => item.review_count > 0)
+          .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+          .slice(0, 5)
+      );
+
+      // Get all reviews for menu items
+      const allReviews = processedMenuItems.flatMap(item => 
+        (item.reviews || []).map((review: any) => ({
+          ...review,
+          menu_item_name: item.name
+        }))
+      );
       
-      // Convert string IDs to numbers
-      const menuItemsWithNumberIds = (menuData || []).map(item => ({
-        ...item,
-        id: parseInt(item.id as string)
-      }))
-      setMenuItems(menuItemsWithNumberIds)
+      // Sort reviews by date
+      setReviews(allReviews.sort((a: any, b: any) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ));
     } catch (error) {
       console.error('Error fetching restaurant data:', error)
       setError('Failed to load restaurant data')
@@ -210,36 +265,96 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
           )}
         </div>
 
+        {/* Featured Items Section */}
+        {featuredItems.length > 0 && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <h2 className="text-xl font-bold mb-4">Featured Items</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {featuredItems.map(item => (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  onAddToCart={() => setSelectedItemId(item.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Most Liked Items Section */}
+        {mostLikedItems.length > 0 && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <h2 className="text-xl font-bold mb-4">Most Liked Items</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {mostLikedItems.map(item => (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  onAddToCart={() => setSelectedItemId(item.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Menu Categories */}
         <MenuCategories
-          categories={Array.from(new Set(menuItems.map(item => item.category)))}
+          categories={[...Array.from(new Set(menuItems.map(item => item.category))), 'Reviews']}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
 
-        {/* Menu Layout */}
+        {/* Main Content Section */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {Array.from(new Set(menuItems.map(item => item.category))).map(category => (
-            <div id={category} key={category} className="mb-8">
-              <h2 className="text-xl font-bold sticky top-[110px] bg-white py-4 z-[10] border-b mb-4 -mt-4">
-                {category}
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {menuItems
-                  .filter(item => 
-                    item.category === category &&
-                    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map(item => (
-                    <MenuItemCard
-                      key={item.id}
-                      item={item}
-                      onAddToCart={() => setSelectedItemId(item.id)}
-                    />
-                  ))}
+          {selectedCategory === 'Reviews' ? (
+            // Reviews Section
+            <div className="mb-8">
+              <h2 className="text-xl font-bold mb-4">All Reviews</h2>
+              <div className="space-y-4">
+                {reviews.map((review: any) => (
+                  <div key={`${review.menu_item_id}-${review.created_at}`} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">{review.menu_item_name}</h3>
+                        <p className="text-sm text-gray-500">By: {review.profile.role || 'Anonymous'}</p>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="mb-2">
+                      <StarRating rating={review.rating} />
+                    </div>
+                    <p className="text-gray-700">{review.comment}</p>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          ) : (
+            // Menu Items Section
+            Array.from(new Set(menuItems.map(item => item.category))).map(category => (
+              <div id={category} key={category} className="mb-8">
+                <h2 className="text-xl font-bold sticky top-[110px] bg-white py-4 z-[10] border-b mb-4 -mt-4">
+                  {category}
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {menuItems
+                    .filter(item => 
+                      item.category === category &&
+                      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map(item => (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onAddToCart={() => setSelectedItemId(item.id)}
+                      />
+                    ))}
+                </div>
+              </div>
+            ))
+          )}
+
           {selectedItemId && (
             <MenuItemPopup
               item={menuItems.find(item => item.id === selectedItemId)!}

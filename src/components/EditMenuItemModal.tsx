@@ -11,6 +11,7 @@ interface MenuItem {
   category: string;
   image_url: string | null;
   restaurant_id: number;
+  featured?: boolean;
 }
 
 interface Props {
@@ -24,7 +25,8 @@ export default function EditMenuItemModal({ item, onClose, onUpdate }: Props) {
     name: item.name,
     description: item.description,
     price: item.price,
-    category: item.category
+    category: item.category,
+    featured: item.featured || false
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -72,7 +74,8 @@ export default function EditMenuItemModal({ item, onClose, onUpdate }: Props) {
           description: formData.description,
           price: formData.price,
           category: formData.category,
-          image_url
+          image_url,
+          featured: formData.featured
         })
         .eq('id', item.id)
         .eq('restaurant_id', item.restaurant_id);
@@ -179,6 +182,19 @@ export default function EditMenuItemModal({ item, onClose, onUpdate }: Props) {
               onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)}
               className="w-full p-2 border rounded"
             />
+          </div>
+
+          <div className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              id="featured"
+              checked={formData.featured}
+              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+              className="h-4 w-4 text-[#00A7A2] focus:ring-[#00A7A2] border-gray-300 rounded"
+            />
+            <label htmlFor="featured" className="ml-2 block text-sm text-gray-700">
+              Featured Item
+            </label>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

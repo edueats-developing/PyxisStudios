@@ -1,5 +1,8 @@
 'use client';
 
+import StarRating from './StarRating';
+import { SparklesIcon } from '@heroicons/react/24/outline';
+
 interface MenuItem {
   id: number;
   name: string;
@@ -7,6 +10,9 @@ interface MenuItem {
   price: number;
   category: string;
   image_url: string | null;
+  featured?: boolean;
+  average_rating?: number;
+  review_count?: number;
 }
 
 interface MenuItemCardProps {
@@ -16,11 +22,24 @@ interface MenuItemCardProps {
 
 export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
   return (
-    <div className="flex gap-4 border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
+    <div className="flex gap-4 border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white relative">
+      {item.featured && (
+        <div className="absolute -top-2 -right-2 bg-[#00A7A2] text-white p-1 rounded-full">
+          <SparklesIcon className="h-5 w-5" />
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-lg mb-1">{item.name}</h3>
         <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.description}</p>
-        <p className="font-semibold text-[#00A7A2]">${item.price.toFixed(2)}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="font-semibold text-[#00A7A2]">${item.price.toFixed(2)}</p>
+          {item.average_rating !== undefined && (
+            <div className="flex items-center gap-1">
+              <StarRating rating={item.average_rating} />
+              <span className="text-sm text-gray-500">({item.review_count || 0})</span>
+            </div>
+          )}
+        </div>
         <button
           onClick={onAddToCart}
           className="mt-2 bg-[#00A7A2] text-white px-4 py-2 rounded hover:bg-[#33B8B4] transition-colors"

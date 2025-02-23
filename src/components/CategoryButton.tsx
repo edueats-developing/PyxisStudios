@@ -10,6 +10,7 @@ import {
   ShoppingBagIcon,
   CakeIcon,
   HomeIcon,
+  ChatBubbleBottomCenterTextIcon,
 } from '@heroicons/react/24/outline';
 
 const categoryIcons: { [key: string]: React.ElementType } = {
@@ -27,6 +28,8 @@ const categoryIcons: { [key: string]: React.ElementType } = {
   // Convenience categories
   'Grocery': ShoppingBagIcon,
   'Convenience': BuildingStorefrontIcon,
+  // Special categories
+  'Reviews': ChatBubbleBottomCenterTextIcon,
 };
 
 interface CategoryButtonProps {
