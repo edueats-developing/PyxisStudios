@@ -104,61 +104,7 @@ export default async function Home() {
         </section>
 
         {/* Partner Schools */}
-        <section className="py-20">
-          <div className="container mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">Schools Who Trust Us</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col items-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/schools/latrobe-primary.png"
-                    alt="Latrobe Primary School"
-                    width={150}
-                    height={150}
-                    className="object-contain"
-                  />
-                </div>
-                <p className="text-center mt-4 font-medium">Latrobe Primary School</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col items-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/schools/port-sorell.png"
-                    alt="Port Sorell Primary"
-                    width={150}
-                    height={150}
-                    className="object-contain"
-                  />
-                </div>
-                <p className="text-center mt-4 font-medium">Port Sorell Primary</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col items-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/schools/leighland.png"
-                    alt="Leighland Christian School"
-                    width={150}
-                    height={150}
-                    className="object-contain"
-                  />
-                </div>
-                <p className="text-center mt-4 font-medium">Leighland Christian School</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col items-center">
-                <div className="w-32 h-32 relative">
-                  <Image
-                    src="/schools/burnie-primary.png"
-                    alt="Burnie Primary School"
-                    width={150}
-                    height={150}
-                    className="object-contain"
-                  />
-                </div>
-                <p className="text-center mt-4 font-medium">Burnie Primary School</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        
 
         {/* Restaurants Section */}
         <section className="py-20 bg-gray-50">
