@@ -1,19 +1,6 @@
-import Link from 'next/link'
 import Image from 'next/image'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 
-export const dynamic = 'force-dynamic'
-
-async function getRestaurants() {
-  const supabase = createServerComponentClient({ cookies })
-  const { data: restaurants } = await supabase.from('restaurants').select('*')
-  return restaurants
-}
-
-export default async function Home() {
-  const restaurants = await getRestaurants()
-
+export default function Home() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
