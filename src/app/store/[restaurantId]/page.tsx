@@ -14,6 +14,13 @@ import StarRating from '../../../components/StarRating'
 
 interface MenuItem {
   id: number;
+import AddToCartButton from '../../../components/AddToCartButton'
+import CheckoutButton from '../../../components/CheckoutButton'
+import BackButton from '../../../components/BackButton'
+import { useRouter } from 'next/navigation'
+
+interface MenuItem {
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -105,6 +112,18 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
       const averageRating = reviewCount > 0
         ? restaurantReviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewCount
         : 0;
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('restaurant_id', params.restaurantId)
+      
+      if (reviewsError) throw reviewsError
+
+      // Calculate average rating and review count
+      const reviewCount = reviewsData?.length || 0
+      const averageRating = reviewCount > 0
+        ? reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+        : 0
 
       setRestaurant({
         ...restaurantData,
@@ -173,6 +192,15 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
       setReviews(allReviews.sort((a: any, b: any) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ));
+      // Fetch menu items
+      const { data: menuData, error: menuError } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('restaurant_id', params.restaurantId)
+        .order('name', { ascending: true })
+      
+      if (menuError) throw menuError
+      setMenuItems(menuData || [])
     } catch (error) {
       console.error('Error fetching restaurant data:', error)
       setError('Failed to load restaurant data')
@@ -472,6 +500,47 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
             onClose={() => setSelectedItemId(null)}
           />
         )}
+    <div className="container mx-auto p-4">
+      <BackButton onClick={() => router.push('/menu')} />
+      
+      <h1 className="text-2xl font-bold mb-4">{restaurant.name}</h1>
+      <p className="mb-4">{restaurant.description}</p>
+      {user && <p className="mb-4">Welcome, {user.email}</p>}
+      
+      <input
+        type="text"
+        placeholder="Search menu items..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full p-2 mb-4 border rounded"
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredItems.map((item) => (
+          <div key={item.id} className="border p-4 rounded shadow-md">
+            <h3 className="font-bold">{item.name}</h3>
+            <p>{item.description}</p>
+            <p className="font-semibold">${item.price.toFixed(2)}</p>
+            <p>Category: {item.category}</p>
+            {item.image_url && (
+              <img src={item.image_url} alt={item.name} className="w-full h-70 object-cover mt-2 rounded" style={{ marginBottom: '1rem' }} />
+            )}
+            <AddToCartButton item={item} />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-2">Cart</h2>
+        {cart.map((item) => (
+          <div key={item.id} className="mb-2 flex justify-between items-center">
+            <span>{item.name} - ${item.price.toFixed(2)} x {item.quantity}</span>
+          </div>
+        ))}
+        <p className="font-bold">
+          Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+        </p>
+        <CheckoutButton user={user} />
       </div>
     </div>
   )
