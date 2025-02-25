@@ -1,6 +1,7 @@
 'use client';
 
 import StarRating from './StarRating';
+import { useRouter } from 'next/navigation';
 
 interface RestaurantCardProps {
   restaurant: {
@@ -11,13 +12,14 @@ interface RestaurantCardProps {
     average_rating?: number;
     review_count?: number;
   };
-  onClick: () => void;
+  onClick?: () => void;
 }
 
-export default function RestaurantCard({ restaurant, onClick }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
+  const router = useRouter();
   return (
     <div 
-      onClick={onClick}
+      onClick={() => router.push(`/store/${restaurant.id}`)}
       className="border rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer bg-white"
     >
       <div className="h-48 bg-gray-200 relative">
