@@ -43,7 +43,6 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [searchInput, setSearchInput] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,6 +50,7 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   const [featuredItems, setFeaturedItems] = useState<MenuItem[]>([])
   const [mostLikedItems, setMostLikedItems] = useState<MenuItem[]>([])
   const [reviews, setReviews] = useState<any[]>([])
+  const [restaurantReviews, setRestaurantReviews] = useState<any[]>([])
   const { items: cart } = useCart()
   const router = useRouter()
 
@@ -83,18 +83,28 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
       if (restaurantError) throw restaurantError
       
       // Fetch reviews for the restaurant
-      const { data: restaurantReviews, error: restaurantReviewsError } = await supabase
+      const { data: restaurantReviewsData, error: restaurantReviewsError } = await supabase
         .from('reviews')
-        .select('rating')
+        .select(`
+          *,
+          profile:profiles!profile_id (
+            id,
+            role
+          )
+        `)
         .eq('restaurant_id', params.restaurantId)
+        .is('menu_item_id', null)
+        .order('created_at', { ascending: false });
       
-      if (restaurantReviewsError) throw restaurantReviewsError
+      if (restaurantReviewsError) throw restaurantReviewsError;
+
+      setRestaurantReviews(restaurantReviewsData || []);
 
       // Calculate average rating and review count
-      const reviewCount = restaurantReviews?.length || 0
+      const reviewCount = restaurantReviewsData?.length || 0;
       const averageRating = reviewCount > 0
-        ? restaurantReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
-        : 0
+        ? restaurantReviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+        : 0;
 
       setRestaurant({
         ...restaurantData,
@@ -174,6 +184,22 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
   const filteredItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Function to scroll to a section with offset
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const offset = 120; // Account for sticky header and navigation
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  const stickyHeaderStyle = "text-xl font-bold sticky top-[110px] bg-white py-4 z-[10] border-b mb-4 -mt-4";
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">
@@ -300,68 +326,120 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
         {/* Menu Categories */}
         <MenuCategories
           categories={[...Array.from(new Set(menuItems.map(item => item.category))), 'Reviews']}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
+          selectedCategory=""
+          onSelectCategory={(category) => {
+            const sectionId = category === 'Reviews' ? 'reviews-section' : category;
+            scrollToSection(sectionId);
+          }}
         />
 
-        {/* Main Content Section */}
+        {/* Menu Items Section */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {selectedCategory === 'Reviews' ? (
-            // Reviews Section
-            <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4">All Reviews</h2>
-              <div className="space-y-4">
-                {reviews.map((review: any) => (
-                  <div key={`${review.menu_item_id}-${review.created_at}`} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold">{review.menu_item_name}</h3>
-                        <p className="text-sm text-gray-500">By: {review.profile.role || 'Anonymous'}</p>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="mb-2">
-                      <StarRating rating={review.rating} />
-                    </div>
-                    <p className="text-gray-700">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // Menu Items Section
-            Array.from(new Set(menuItems.map(item => item.category))).map(category => (
-              <div id={category} key={category} className="mb-8">
-                <h2 className="text-xl font-bold sticky top-[110px] bg-white py-4 z-[10] border-b mb-4 -mt-4">
-                  {category}
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {menuItems
-                    .filter(item => 
-                      item.category === category &&
-                      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map(item => (
+          {Array.from(new Set(menuItems.map(item => item.category))).map(category => (
+            <div id={category} key={category} className="mb-12">
+              <h2 className={stickyHeaderStyle}>
+                {category}
+              </h2>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8">
+                {menuItems
+                  .filter(item => 
+                    item.category === category && 
+                    (searchTerm === '' || item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                  )
+                  .map(item => (
+                    <div key={item.id}>
+                      {/* Menu Item Card */}
                       <MenuItemCard
-                        key={item.id}
                         item={item}
                         onAddToCart={() => setSelectedItemId(item.id)}
                       />
-                    ))}
+
+                      {/* Item Reviews */}
+                      {reviews.filter(review => review.menu_item_id === item.id).length > 0 && (
+                        <div className="mt-4 border-t pt-4">
+                          <h4 className="text-sm font-semibold text-gray-600 mb-2">Reviews</h4>
+                          <div className="space-y-3">
+                            {reviews
+                              .filter(review => review.menu_item_id === item.id)
+                              .map(review => (
+                                <div key={`${review.menu_item_id}-${review.created_at}`} className="bg-gray-50 rounded-lg p-3">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <p className="text-sm text-gray-500">By: {review.profile.role || 'Anonymous'}</p>
+                                    <span className="text-sm text-gray-500">
+                                      {new Date(review.created_at).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                  <div className="mb-1">
+                                    <StarRating rating={review.rating} />
+                                  </div>
+                                  <p className="text-sm text-gray-700">{review.comment}</p>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Reviews Section */}
+        <div id="reviews-section" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-8">
+          <h2 className={stickyHeaderStyle}>
+            Reviews
+          </h2>
+          <div>
+            {/* Restaurant Reviews */}
+            {restaurantReviews.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4">Restaurant Reviews</h3>
+                <div className="space-y-4">
+                  {restaurantReviews.map((review: any) => (
+                    <div key={`restaurant-${review.created_at}`} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-gray-500">By: {review.profile.role || 'Anonymous'}</p>
+                        <span className="text-sm text-gray-500">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="mb-2">
+                        <StarRating rating={review.rating} />
+                      </div>
+                      <p className="text-gray-700">{review.comment}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))
-          )}
+            )}
 
-          {selectedItemId && (
-            <MenuItemPopup
-              item={menuItems.find(item => item.id === selectedItemId)!}
-              isOpen={true}
-              onClose={() => setSelectedItemId(null)}
-            />
-          )}
+            {/* Menu Item Reviews */}
+            {reviews.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Menu Item Reviews</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {reviews.map((review: any) => (
+                    <div key={`${review.menu_item_id}-${review.created_at}`} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h4 className="font-semibold">{review.menu_item_name}</h4>
+                          <p className="text-sm text-gray-500">By: {review.profile.role || 'Anonymous'}</p>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="mb-2">
+                        <StarRating rating={review.rating} />
+                      </div>
+                      <p className="text-gray-700">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Cart Section */}
@@ -386,6 +464,14 @@ export default function RestaurantPage({ params }: { params: { restaurantId: str
           </p>
           <CheckoutButton user={user} />
         </div>
+
+        {selectedItemId && (
+          <MenuItemPopup
+            item={menuItems.find(item => item.id === selectedItemId)!}
+            isOpen={true}
+            onClose={() => setSelectedItemId(null)}
+          />
+        )}
       </div>
     </div>
   )
