@@ -236,23 +236,23 @@ function MenuManagement({ user }: { user: User }) {
 
       {/* Controls */}
       <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
           {/* Search */}
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <div className="relative w-full sm:w-3/5">
+            <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" aria-hidden="true" />
             </div>
             <input
               type="text"
               placeholder="Search menu items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#00A7A2] focus:ring-[#00A7A2] sm:text-sm"
+              className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#00A7A2] focus:ring-[#00A7A2] sm:text-sm"
             />
           </div>
 
           {/* Category filter */}
-          <div className="w-full sm:w-1/4">
+          <div className="w-full sm:w-1/5">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -267,7 +267,7 @@ function MenuManagement({ user }: { user: User }) {
           </div>
 
           {/* View mode toggle */}
-          <div className="flex items-center space-x-2 border border-gray-200 rounded-md p-1">
+          <div className="flex items-center justify-center space-x-2 border border-gray-200 rounded-md p-1 w-full sm:w-auto">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded ${
