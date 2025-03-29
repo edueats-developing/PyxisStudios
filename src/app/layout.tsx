@@ -110,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {!isLandingPage && (
             <>
               {/* Horizontal Navbar */}
-              <nav className="bg-[#00A7A2] bg-opacity-90 backdrop-filter backdrop-blur-lg p-3 text-white sticky top-0 w-full z-50">
+              <nav className="bg-[#00A7A2] bg-opacity-90 backdrop-filter backdrop-blur-lg p-3 text-white fixed top-0 left-0 right-0 w-full z-50 shadow-md">
                 <div className="container mx-auto flex justify-between items-center">
                   <div className="flex items-center">
                     <Image
@@ -244,7 +244,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Main Content */}
           <div className="min-h-screen flex flex-col">
-            <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} pt-4 flex-grow`}>
+            <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} ${!isLandingPage ? 'pt-[calc(3.75rem+1rem)]' : 'pt-4'} flex-grow`}>
               {children}
               {!isLandingPage && <Footer />}
             </main>
