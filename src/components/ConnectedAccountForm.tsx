@@ -1,15 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import TermsAndConditionsCheckbox from './TermsAndConditionsCheckbox';
 
 export default function ConnectedAccountForm() {
   const [email, setEmail] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!termsAccepted) {
+      setError('You must accept the Terms and Conditions to continue');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
 
@@ -75,6 +83,11 @@ export default function ConnectedAccountForm() {
             required
           />
         </div>
+        
+        <TermsAndConditionsCheckbox 
+          isAccepted={termsAccepted} 
+          setIsAccepted={setTermsAccepted} 
+        />
         <button
           type="submit"
           disabled={loading}
