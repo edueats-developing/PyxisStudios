@@ -38,13 +38,19 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
+  --card-bg: 255, 255, 255;
+  --card-border: 229, 231, 235;
+  --text-primary: 17, 24, 39;
+  --text-secondary: 107, 114, 128;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-rgb: 0, 0, 0;
-  }
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 17, 24, 39;
+  --card-bg: 31, 41, 55;
+  --card-border: 55, 65, 81;
+  --text-primary: 255, 255, 255;
+  --text-secondary: 156, 163, 175;
 }
 
 html {
@@ -57,6 +63,92 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+/* Dark mode styles for common elements */
+.dark .bg-white {
+  background-color: rgb(var(--card-bg));
+}
+
+.dark .text-gray-900 {
+  color: rgb(var(--text-primary));
+}
+
+.dark .text-gray-700, 
+.dark .text-gray-800 {
+  color: rgb(var(--text-secondary));
+}
+
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: rgb(var(--card-border));
+}
+
+.dark .shadow-md,
+.dark .shadow-sm {
+  --tw-shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode styles for sidebar */
+.dark .sidebar-link {
+  color: white;
+}
+
+.dark .sidebar-link svg {
+  color: white;
+}
+
+.dark .sidebar-link:hover {
+  background-color: rgb(55, 65, 81); /* slightly lighter than the card background */
+  color: white;
+}
+
+.dark .horizontal-separator {
+  background-color: rgb(55, 65, 81);
+}
+
+/* Dark mode styles for form elements */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: rgb(55, 65, 81) !important; /* dark gray */
+  border-color: rgb(75, 85, 99) !important; /* slightly lighter gray for border */
+  color: white !important;
+}
+
+.dark input:disabled,
+.dark select:disabled,
+.dark textarea:disabled {
+  background-color: rgb(31, 41, 55) !important; /* darker gray for disabled state */
+  color: rgb(156, 163, 175) !important; /* lighter gray for disabled text */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgb(156, 163, 175) !important; /* lighter gray for placeholder text */
+}
+
+/* Dark mode styles for settings cards */
+.dark .bg-gray-50 {
+  background-color: rgb(17, 24, 39) !important;
+}
+
+.dark .text-gray-700 {
+  color: rgb(229, 231, 235) !important; /* light gray for labels */
+}
+
+.dark .text-gray-500 {
+  color: rgb(156, 163, 175) !important; /* medium gray for hints */
+}
+
+/* Dark mode styles for link hover states */
+.dark .hover\:bg-gray-50:hover {
+  background-color: rgb(55, 65, 81) !important;
+}
+
+.dark .hover\:bg-red-50:hover {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+}
+
 /* Styles for hoverable buttons in the admin sidebar */
 .sidebar-link {
   display: flex;
