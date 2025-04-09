@@ -40,7 +40,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="flex-grow mt-[60px]">
+      <main className="flex-grow mt-[56px]">
         {/* Hero Section */}
         <section className="relative bg-gradient-to-r from-[#00A7A2] to-[#008C87] text-white py-32">
           <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">

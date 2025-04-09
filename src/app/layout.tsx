@@ -244,7 +244,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Main Content */}
           <div className="min-h-screen flex flex-col">
-            <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} ${!isLandingPage ? 'pt-[3.75rem]' : 'pt-4'} flex-grow`}>
+            <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} ${!isLandingPage ? 'pt-[3.75rem]' : 'pt-0'} flex-grow`}>
               {children}
               {!isLandingPage && <Footer />}
             </main>
