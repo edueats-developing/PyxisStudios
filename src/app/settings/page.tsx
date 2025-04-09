@@ -17,8 +17,12 @@ import {
   Cog6ToothIcon,
   UserCircleIcon,
   ClockIcon,
-  TruckIcon
+  TruckIcon,
+  MoonIcon,
+  SunIcon
 } from '@heroicons/react/24/outline'
+import { useDarkMode } from '@/components/DarkModeContext'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 import SettingsTabs from '@/components/SettingsTabs'
 import SettingsCard from '@/components/SettingsCard'
@@ -419,7 +423,19 @@ export default function SettingsPage() {
         {/* Account Tab */}
         {activeTab === 'account' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
+              <SettingsCard title="Appearance">
+                <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-md">
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Dark Mode</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Switch between light and dark themes
+                    </p>
+                  </div>
+                  <DarkModeToggle />
+                </div>
+              </SettingsCard>
+              
               <SettingsCard title="Account Management">
                 <div className="space-y-4">
                   <Link href="/account" className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">

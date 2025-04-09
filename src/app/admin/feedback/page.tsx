@@ -7,10 +7,9 @@ import { User } from '@supabase/supabase-js'
 import StarRating from '@/components/StarRating'
 import { 
   ChatBubbleLeftIcon, 
-  ArrowPathIcon,
-  MoonIcon,
-  SunIcon
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useDarkMode } from '@/components/DarkModeContext'
 
 type DatabaseReview = {
   id: number
@@ -61,8 +60,8 @@ function FeedbackDashboard({ user }: FeedbackDashboardProps) {
   const [filter, setFilter] = useState<'all' | 'restaurant' | 'menu_item'>('all')
   const [sortBy, setSortBy] = useState<'date' | 'rating'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [darkMode, setDarkMode] = useState<boolean>(false)
   const [refreshing, setRefreshing] = useState(false)
+  const { darkMode } = useDarkMode()
 
   useEffect(() => {
     fetchRestaurant()
@@ -182,10 +181,6 @@ function FeedbackDashboard({ user }: FeedbackDashboardProps) {
     }
   })
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
 
   if (loading) {
     return <div className="text-center p-8">Loading...</div>
@@ -201,7 +196,7 @@ function FeedbackDashboard({ user }: FeedbackDashboardProps) {
 
   return (
     <div className={`p-8 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
-      {/* Top Bar with Dark Mode Toggle */}
+      {/* Top Bar */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">
           Feedback Dashboard - <span className="text-[#00A7A2]">{restaurant?.name}</span>
@@ -214,14 +209,6 @@ function FeedbackDashboard({ user }: FeedbackDashboardProps) {
           >
             <ArrowPathIcon className={`h-5 w-5 text-[#00A7A2] ${refreshing ? 'animate-spin' : ''}`} />
             <span className="text-gray-700 dark:text-gray-300">Refresh</span>
-          </button>
-          <button 
-            onClick={toggleDarkMode}
-            className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'} transition-colors`}
-            aria-label="Toggle dark mode"
-            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {darkMode ? <SunIcon className="h-6 w-6" /> : <MoonIcon className="h-6 w-6" />}
           </button>
         </div>
       </div>

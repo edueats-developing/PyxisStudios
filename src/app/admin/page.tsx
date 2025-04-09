@@ -17,10 +17,10 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   InformationCircleIcon,
-  MoonIcon,
-  SunIcon,
   ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
+import { useDarkMode } from '@/components/DarkModeContext'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 interface DatabaseReview {
   id: number
@@ -99,8 +99,8 @@ function AdminDashboard({ user }: AdminDashboardProps) {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [reviews, setReviews] = useState<DatabaseReview[]>([])
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month'>('today')
-  const [darkMode, setDarkMode] = useState<boolean>(false)
   const pathname = usePathname()
+  const { darkMode } = useDarkMode()
 
   useEffect(() => {
     fetchRestaurant()
@@ -242,10 +242,6 @@ function AdminDashboard({ user }: AdminDashboardProps) {
     }
   }
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
 
   // Filter orders based on time period
   const getFilteredOrders = () => {
@@ -292,14 +288,7 @@ function AdminDashboard({ user }: AdminDashboardProps) {
         <h1 className="text-3xl font-bold">
           Dashboard Overview - <span className="text-[#00A7A2]">{restaurant?.name}</span>
         </h1>
-        <button 
-          onClick={toggleDarkMode}
-          className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'} transition-colors`}
-          aria-label="Toggle dark mode"
-          title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-        >
-          {darkMode ? <SunIcon className="h-6 w-6" /> : <MoonIcon className="h-6 w-6" />}
-        </button>
+        <DarkModeToggle />
       </div>
 
       {/* Restaurant Info Popup */}

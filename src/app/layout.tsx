@@ -2,6 +2,7 @@
 
 import { Analytics } from '@vercel/analytics/next'
 import { useState, useEffect } from 'react'
+import { DarkModeProvider } from '../components/DarkModeContext'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '../lib/supabase'
@@ -105,7 +106,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <CartProvider>
+        <DarkModeProvider>
+          <CartProvider>
           <Analytics />
           {!isLandingPage && (
             <>
@@ -244,12 +246,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Main Content */}
           <div className="min-h-screen flex flex-col">
-            <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} ${!isLandingPage ? 'pt-[3.75rem]' : 'pt-0'} flex-grow`}>
+          <main className={`${!isLandingPage && (profile?.role === 'admin' || profile?.role === 'customer') ? 'ml-64' : ''} ${!isLandingPage ? 'pt-[3.75rem]' : 'pt-0'} flex-grow`}>
               {children}
               {!isLandingPage && <Footer />}
             </main>
           </div>
-        </CartProvider>
+          </CartProvider>
+        </DarkModeProvider>
       </body>
     </html>
   )

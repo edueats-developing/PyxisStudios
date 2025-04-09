@@ -110,45 +110,44 @@ body {
 .dark input,
 .dark select,
 .dark textarea {
-  background-color: rgb(55, 65, 81) !important; /* dark gray */
-  border-color: rgb(75, 85, 99) !important; /* slightly lighter gray for border */
-  color: white !important;
+  background-color: rgb(55, 65, 81); /* dark gray */
+  border-color: rgb(75, 85, 99); /* slightly lighter gray for border */
+  color: white;
 }
 
 .dark input:disabled,
 .dark select:disabled,
 .dark textarea:disabled {
-  background-color: rgb(31, 41, 55) !important; /* darker gray for disabled state */
-  color: rgb(156, 163, 175) !important; /* lighter gray for disabled text */
+  background-color: rgb(31, 41, 55); /* darker gray for disabled state */
+  color: rgb(156, 163, 175); /* lighter gray for disabled text */
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: rgb(156, 163, 175) !important; /* lighter gray for placeholder text */
+  color: rgb(156, 163, 175); /* lighter gray for placeholder text */
 }
 
 /* Dark mode styles for settings cards */
 .dark .bg-gray-50 {
-  background-color: rgb(17, 24, 39) !important;
+  background-color: rgb(17, 24, 39);
 }
 
 .dark .text-gray-700 {
-  color: rgb(229, 231, 235) !important; /* light gray for labels */
+  color: rgb(229, 231, 235); /* light gray for labels */
 }
 
 .dark .text-gray-500 {
-  color: rgb(156, 163, 175) !important; /* medium gray for hints */
+  color: rgb(156, 163, 175); /* medium gray for hints */
 }
 
 /* Dark mode styles for link hover states */
 .dark .hover\:bg-gray-50:hover {
-  background-color: rgb(55, 65, 81) !important;
+  background-color: rgb(55, 65, 81);
 }
 
 .dark .hover\:bg-red-50:hover {
-  background-color: rgba(220, 38, 38, 0.1) !important;
+  background-color: rgba(220, 38, 38, 0.1);
 }
-
 /* Styles for hoverable buttons in the admin sidebar */
 .sidebar-link {
   display: flex;
