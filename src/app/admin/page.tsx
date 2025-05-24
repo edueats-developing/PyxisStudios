@@ -466,9 +466,9 @@ function AdminDashboard({ user }: AdminDashboardProps) {
             </Link>
           </div>
           <div className="space-y-4">
-            {filteredOrders.slice(0, 3).map((order) => (
+            {filteredOrders.slice(0, 3).map((order, index) => (
               <div 
-                key={order.id} 
+                key={`order-${order.id}-${index}`} 
                 className={`${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b pb-4 hover:bg-gray-50 dark:hover:bg-gray-700 p-3 rounded-md transition-colors`}
               >
                 <div className="flex justify-between items-start">

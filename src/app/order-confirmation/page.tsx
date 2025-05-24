@@ -39,7 +39,10 @@ function OrderConfirmationContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
-  const orderIds = searchParams.get('orderIds')?.split(',') || []
+  // Handle both singular orderId and plural orderIds parameters
+  const orderId = searchParams.get('orderId')
+  const orderIdsParam = searchParams.get('orderIds')
+  const orderIds = orderIdsParam?.split(',') || (orderId ? [orderId] : [])
 
   useEffect(() => {
     async function fetchOrders() {
@@ -48,6 +51,8 @@ function OrderConfirmationContent() {
         setLoading(false)
         return
       }
+      
+      console.log('Fetching orders with IDs:', orderIds)
 
       try {
         const { data, error } = await supabase
